@@ -1,0 +1,28 @@
+.page-wrapper {
+	width: 100%;
+	height: 100%;
+
+	background-color: white;
+
+	position: relative;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	&__error-span {
+		position: absolute;
+
+		z-index: 1;
+
+		background-color: white;
+		border: 1px solid lightgray;
+		border-radius: 1rem;
+		padding: 0.5rem;
+
+		max-width: calc(100dvw - 16rem);
+
+		text-align: center;
+	}
+}

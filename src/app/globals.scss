@@ -1,0 +1,31 @@
+:root {
+	--font-size-root: 16px;
+}
+
+:root {
+	--color-text-default: black;
+}
+
+:root {
+	color-scheme: dark;
+
+	color: var(--color-text-default);
+	font-size: var(--font-size-root);
+}
+
+* {
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+}
+
+html {
+	height: 100dvh;
+	width: 100dvw;
+	overflow: hidden;
+}
+
+body {
+	height: 100%;
+	width: 100%;
+}
