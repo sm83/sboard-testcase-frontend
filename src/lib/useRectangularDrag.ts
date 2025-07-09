@@ -1,12 +1,19 @@
+import { RectangularPositionChangeParams } from "@/app/page";
 import RectConnectionFeatureCanvas from "@/canvas/RectConnectionFeature/RectConnectionFeatureCanvas";
 import { MouseEventHandler, useCallback, useState } from "react";
 
+// TODO: decompose interface
 const useRectangularDrag = ({
 	canvas,
 	canvasFeature,
+	handleRectangularPositionChange,
 }: {
 	canvas: HTMLCanvasElement | null;
 	canvasFeature: RectConnectionFeatureCanvas | null;
+	handleRectangularPositionChange: ({
+		index,
+		newPosition,
+	}: RectangularPositionChangeParams) => void;
 }) => {
 	const [rectToMove, setRectToMove] = useState<number | null>(null);
 	const [cursorOffset, setCursorOffset] = useState<{
@@ -75,14 +82,24 @@ const useRectangularDrag = ({
 				const mouseX = e.clientX - canvasBoundingBox.width / 2;
 				const mouseY = e.clientY - canvasBoundingBox.height / 2;
 
-				canvasFeature.moveRectangular({
-					index: rectToMove,
+				const newRectangularPosition = {
 					x: mouseX - cursorOffset.x,
 					y: mouseY - cursorOffset.y,
+				};
+
+				handleRectangularPositionChange({
+					index: rectToMove,
+					newPosition: newRectangularPosition,
 				});
 			}
 		},
-		[canvas, canvasFeature, cursorOffset, rectToMove]
+		[
+			canvas,
+			canvasFeature,
+			cursorOffset,
+			handleRectangularPositionChange,
+			rectToMove,
+		]
 	);
 	return { handleMouseDown, handleMouseUp, handleMouseMove };
 };

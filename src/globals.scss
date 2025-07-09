@@ -1,9 +1,18 @@
+@use "./fonts.scss";
+
 :root {
 	--font-size-root: 16px;
 }
 
 :root {
-	--color-text-default: black;
+	--color-text-default: #f6f6f6;
+	--color-text-pale: #c7c7c7;
+
+	--viewport-background-color: #3f3f3f;
+	--interface-background-color-primary: #3d3d3d;
+	--geometry-fill-color: #a5a7a8;
+
+	--input-background-color: #545454;
 }
 
 :root {

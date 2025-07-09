@@ -6,15 +6,25 @@ import { Rect } from "./types/Rect.type";
 import { ConnectionPoint } from "./types/ConnectionPoint.type";
 import { Point } from "./types/Point.type";
 import useRectangularDrag from "@/lib/useRectangularDrag";
+import { RectangularPositionChangeParams } from "@/app/page";
 
 const RectConnectionFeature = ({
+	initialRectangulars,
 	rectangulars,
+	initialConnectionPoints,
 	connectionPoints,
 	connectionPath,
+	handleRectangularPositionChange,
 }: {
+	initialRectangulars: [Rect, Rect];
 	rectangulars: [Rect, Rect];
-	connectionPoints: [ConnectionPoint, ConnectionPoint] | null;
+	initialConnectionPoints: [ConnectionPoint, ConnectionPoint];
+	connectionPoints: [ConnectionPoint, ConnectionPoint];
 	connectionPath: Point[] | null;
+	handleRectangularPositionChange: ({
+		index,
+		newPosition,
+	}: RectangularPositionChangeParams) => void;
 }) => {
 	const wrapperId: string = "rect-connection-feature-wrapper";
 	const featureId: string = "rect-connection-feature";
@@ -57,13 +67,31 @@ const RectConnectionFeature = ({
 			const rectConnectionFeature = new RectConnectionFeatureCanvas({
 				canvas,
 				ctx,
-				rectangulars,
-				connectionPoints,
+				rectangulars: initialRectangulars,
+				connectionPoints: initialConnectionPoints,
 				connectionPath,
 			});
 			setCanvasFeature(rectConnectionFeature);
 		}
-	}, [canvas, connectionPath, connectionPoints, ctx, rectangulars]);
+	}, [
+		canvas,
+		connectionPath,
+		ctx,
+		initialConnectionPoints,
+		initialRectangulars,
+	]);
+
+	// updating rectangulars
+	useEffect(() => {
+		canvasFeature?.updateRectangulars({ newRectangulars: rectangulars });
+	}, [canvasFeature, rectangulars]);
+
+	// updating connectionPoints
+	useEffect(() => {
+		canvasFeature?.updateConnectionPoints({
+			newConnectionPoints: connectionPoints,
+		});
+	}, [canvasFeature, connectionPoints]);
 
 	// resize callback
 	const redrawFeature = useCallback(() => {
@@ -83,7 +111,11 @@ const RectConnectionFeature = ({
 
 	// dragger
 	const { handleMouseDown, handleMouseUp, handleMouseMove } =
-		useRectangularDrag({ canvas, canvasFeature });
+		useRectangularDrag({
+			canvas,
+			canvasFeature,
+			handleRectangularPositionChange,
+		});
 
 	return (
 		<div id={wrapperId} className={styles["rect-connection-feature-wrapper"]}>
