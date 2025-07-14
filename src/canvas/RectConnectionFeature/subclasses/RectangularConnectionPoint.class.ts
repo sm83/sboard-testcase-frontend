@@ -86,7 +86,6 @@ class ConnectionPointItem {
 	}
 
 	getRelativePosition() {
-		// console.log("this.#relativePosition:", this.#relativePosition);
 		return this.#relativePosition;
 	}
 
@@ -104,7 +103,6 @@ class ConnectionPointItem {
 
 	// setters code area
 	setEdge(newEdge: Edge | null) {
-		console.log("setEdge(param), param:", newEdge);
 		this.#edge = newEdge;
 		this.#checkAngle();
 	}
@@ -119,8 +117,6 @@ class ConnectionPointItem {
 
 	setRelativePosition(updatedRelativePosition: Point) {
 		if (this.#relativePosition !== updatedRelativePosition) {
-			this.#checkConnection();
-
 			this.#relativePosition = updatedRelativePosition;
 		}
 	}
@@ -146,15 +142,8 @@ class ConnectionPointItem {
 		}
 	}
 
-	#checkConnection(): void {
-		console.log("checkConnection()");
+	checkConnection(): void {
 		if (this.#edge) {
-			console.group();
-			console.log("vertice1:", this.#edge.vertice1);
-			console.log("vertice2:", this.#edge.vertice2);
-			console.log("targetVertice:", this.#position);
-			console.groupEnd();
-
 			const isConnected = isPointOnSegment({
 				vertice1: this.#edge.vertice1,
 				vertice2: this.#edge.vertice2,
@@ -183,19 +172,6 @@ class ConnectionPointItem {
 	// essentials
 	move({ newPosition }: { newPosition: Point }) {
 		this.#position = newPosition;
-
-		// const newRelativePosition: Point = {
-		// 	x: pointPosition.x - rectPosition.x,
-		// 	y: pointPosition.y - rectPosition.y,
-		// };
-
-		// if (
-		// 	newRelativePosition.x !== this.#relativePosition.x ||
-		// 	newRelativePosition.y !== this.#relativePosition.y
-		// ) {
-		// 	this.#relativePosition = newRelativePosition;
-		// 	this.#checkConnection();
-		// }
 
 		this.#anlgePointer = this.#calculateAnglePointer();
 	}

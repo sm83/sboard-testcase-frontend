@@ -7,6 +7,8 @@ import RectangularEdgeItem from "./RectangularEdge.class";
 import { InitException } from "./InitException.class";
 import isPointOnSegment from "@/lib/isPointOnSegment";
 import { AnyException } from "../types/AnyException.type";
+import { getRectangularVertices } from "@/lib/dataConverter";
+import { getRectBoundingAxes } from "@/lib/getRectBoundingAxes";
 
 class RectangularItem {
 	#index: number;
@@ -114,14 +116,20 @@ class RectangularItem {
 	}
 
 	getBoundingAxes(): [number, number, number, number] {
-		const [left, right, top, bottom] = [
-			this.#position.x - this.#size.width / 2,
-			this.#position.x + this.#size.width / 2,
-			this.#position.y - this.#size.height / 2,
-			this.#position.y + this.#size.height / 2,
-		];
+		return getRectBoundingAxes({
+			rect: { position: this.#position, size: this.#size },
+			offset: 0,
+		});
 
-		return [left, right, top, bottom];
+		// TODO: make sure this is useless.
+		// const [left, right, top, bottom] = [
+		// 	this.#position.x - this.#size.width / 2,
+		// 	this.#position.x + this.#size.width / 2,
+		// 	this.#position.y - this.#size.height / 2,
+		// 	this.#position.y + this.#size.height / 2,
+		// ];
+
+		// return [left, right, top, bottom];
 	}
 
 	getEdges() {
@@ -149,28 +157,10 @@ class RectangularItem {
 	}
 
 	#calculateVertices() {
-		return [
-			// top-left
-			{
-				x: this.#position.x - this.#size.width / 2,
-				y: this.#position.y - this.#size.height / 2,
-			},
-			// top-right
-			{
-				x: this.#position.x + this.#size.width / 2,
-				y: this.#position.y - this.#size.height / 2,
-			},
-			// bottom-right
-			{
-				x: this.#position.x + this.#size.width / 2,
-				y: this.#position.y + this.#size.height / 2,
-			},
-			//bottom-left
-			{
-				x: this.#position.x - this.#size.width / 2,
-				y: this.#position.y + this.#size.height / 2,
-			},
-		];
+		return getRectangularVertices({
+			position: this.#position,
+			size: this.#size,
+		});
 	}
 
 	#calculateEdges() {
@@ -178,22 +168,22 @@ class RectangularItem {
 			new RectangularEdgeItem({
 				vertice1: this.#vertices[0],
 				vertice2: this.#vertices[1],
-				alignmentNormal: 180,
+				alignmentNormal: 90,
 			}),
 			new RectangularEdgeItem({
 				vertice1: this.#vertices[1],
 				vertice2: this.#vertices[2],
-				alignmentNormal: 90,
+				alignmentNormal: 180,
 			}),
 			new RectangularEdgeItem({
 				vertice1: this.#vertices[2],
 				vertice2: this.#vertices[3],
-				alignmentNormal: 0,
+				alignmentNormal: 270,
 			}),
 			new RectangularEdgeItem({
 				vertice1: this.#vertices[3],
 				vertice2: this.#vertices[0],
-				alignmentNormal: 270,
+				alignmentNormal: 0,
 			}),
 		];
 	}
@@ -202,7 +192,6 @@ class RectangularItem {
 	move(x: number, y: number) {
 		this.#position = { x, y };
 
-		console.log("vertices and edges update in rectangular");
 		this.#vertices = this.#calculateVertices();
 		this.#edges = this.#calculateEdges();
 	}
@@ -255,8 +244,8 @@ class RectangularItem {
 
 		this.#ctx.fillStyle = "#A5A7A8";
 		this.#ctx.fillRect(
-			this.#vertices[0].x,
-			this.#vertices[0].y,
+			this.#vertices[2].x,
+			this.#vertices[2].y,
 			this.#size.width,
 			this.#size.height
 		);

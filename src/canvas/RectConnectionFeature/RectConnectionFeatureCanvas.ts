@@ -7,6 +7,7 @@ import { Point } from "./types/Point.type";
 import { Rect } from "./types/Rect.type";
 import { InitException } from "./subclasses/InitException.class";
 import { AlignmentNormal } from "./types/AlignmentNormal.type";
+import { RuntimeException } from "./subclasses/RuntimeException.class";
 
 class RectConnectionFeatureCanvas {
 	#canvas: HTMLCanvasElement;
@@ -18,8 +19,18 @@ class RectConnectionFeatureCanvas {
 
 	#errors: AnyException[] = [];
 	#pushError: (newError: AnyException) => void = (newError: AnyException) => {
-		this.#errors.push(newError);
-		console.warn(newError);
+		// TODO: place it to .env
+		const debug = false;
+
+		if (debug && newError instanceof RuntimeException) {
+			this.#errors.push(newError);
+			console.warn(newError);
+		}
+
+		if (newError instanceof InitException) {
+			this.#errors.push(newError);
+			console.warn(newError);
+		}
 	};
 
 	constructor(constructBody: {
@@ -85,140 +96,35 @@ class RectConnectionFeatureCanvas {
 		return connectionPoints;
 	}
 
+	// reactive adaptation
 	updateRectangulars({ newRectangulars }: { newRectangulars: [Rect, Rect] }) {
 		const current: [Rect, Rect] = this.#rectangulars.map((rect) =>
 			rect.getState()
 		) as [Rect, Rect];
 
-		console.log("UPDATE RECTANGUALRS");
-
 		current.forEach((rect, index) => {
 			// Position changed
 			if (rect.position !== newRectangulars[index].position) {
-				// getting connection point
-				const rectConnectionPoint =
-					this.#rectangulars[index].getConnectionPoint();
-
-				// checking if connection point was created successfully
-				if (!(rectConnectionPoint instanceof InitException)) {
-					// checking if connection point has edge and status is connected
-					if (
-						rectConnectionPoint.getEdge() !== null &&
-						rectConnectionPoint.getConnectionStatus() === "connected"
-					) {
-						// moving connection point
-						// TODO: REPLACE WITH CHANGING STATE
-						// TODO: MAKE SURE updateConnectionPoints WORKS WELL!
-						rectConnectionPoint.move({
-							newPosition: {
-								x:
-									newRectangulars[index].position.x +
-									rectConnectionPoint.getRelativePosition().x,
-								y:
-									newRectangulars[index].position.y +
-									rectConnectionPoint.getRelativePosition().y,
-							},
-						});
-
-						console.log("connection point move in feature");
-					}
-				}
-
-				console.log("rectangular move in feature");
 				// moving rectangular
 				this.#rectangulars[index].move(
 					newRectangulars[index].position.x,
 					newRectangulars[index].position.y
 				);
-
-				console.log("updateConnectionPointEdge() in feature");
-				// updating edge of connection point.
-				this.#rectangulars[index].updateConnectionPointEdge();
-
-				// checking if connection point was created successfully
-				if (!(rectConnectionPoint instanceof InitException)) {
-					const currentRectPosition = this.#rectangulars[index].getPosition();
-					const currentConnectionPointPosition =
-						rectConnectionPoint.getPosition();
-
-					// updating relative position. if its a new value - connection point instance
-					// will proceed checkConnection method.
-					rectConnectionPoint.setRelativePosition({
-						x: currentConnectionPointPosition.x - currentRectPosition.x,
-						y: currentConnectionPointPosition.y - currentRectPosition.y,
-					});
-				}
 			}
 			// size changed
 			if (rect.size !== newRectangulars[index].size) {
-				const currentSize = newRectangulars[index].size;
-				const scaleChange = {
-					x: currentSize.width - newRectangulars[index].size.width,
-					y: currentSize.height - newRectangulars[index].size.height,
-				};
-
-				// getting connection point
-				const rectConnectionPoint =
-					this.#rectangulars[index].getConnectionPoint();
-
-				// checking if connection point was created successfully
-				if (!(rectConnectionPoint instanceof InitException)) {
-					const edge = rectConnectionPoint.getEdge();
-
-					// checking if connection point has edge and status is connected
-					if (
-						edge !== null &&
-						rectConnectionPoint.getConnectionStatus() === "connected"
-					) {
-						const offsetSigned = this.#calculateOffsetByEdgeNormal({
-							scaleChange,
-							edgeNormal: edge.alignmentNormal,
-						});
-
-						// applying offset of connected connecion point
-						rectConnectionPoint.move({
-							newPosition: {
-								x:
-									newRectangulars[index].position.x +
-									rectConnectionPoint.getRelativePosition().x +
-									offsetSigned.x,
-								y:
-									newRectangulars[index].position.y +
-									rectConnectionPoint.getRelativePosition().y +
-									offsetSigned.y,
-							},
-						});
-					}
-				}
-
 				// resizing rectangular
 				this.#rectangulars[index].resize(
 					newRectangulars[index].size.width,
 					newRectangulars[index].size.height
 				);
-
-				// checking if connection point was created successfully
-				if (!(rectConnectionPoint instanceof InitException)) {
-					const currentRectPosition = this.#rectangulars[index].getPosition();
-					const currentConnectionPointPosition =
-						rectConnectionPoint.getPosition();
-
-					// updating relative position. if its a new value - connection point instance
-					// will proceed checkConnection method.
-					rectConnectionPoint.setRelativePosition({
-						x: currentConnectionPointPosition.x - currentRectPosition.x,
-						y: currentConnectionPointPosition.y - currentRectPosition.y,
-					});
-
-					// updating edge of connection point.
-					this.#rectangulars[index].updateConnectionPointEdge();
-				}
 			}
 		});
 
 		this.#drawAll();
 	}
 
+	// reactive adaptation
 	updateConnectionPoints({
 		newConnectionPoints,
 	}: {
@@ -227,6 +133,7 @@ class RectConnectionFeatureCanvas {
 		const current = this.#rectangulars.map((rect) => rect.getConnectionPoint());
 
 		current.forEach((connectionPoint, index) => {
+			// if connection point was constructed successfully
 			if (!(connectionPoint instanceof InitException)) {
 				// Position changed
 				if (
@@ -246,12 +153,24 @@ class RectConnectionFeatureCanvas {
 
 				// and after all transformations of connection point
 				// we are updating relativePosition
-
 				const currentRectPosition = this.#rectangulars[index].getPosition();
 				const currentConnectionPointPosition = connectionPoint.getPosition();
 
 				// updating relative position. if its a new value - connection point instance
 				// will proceed checkConnection method.
+
+				// if edge assigned - check if it still connected
+				if (connectionPoint.getEdge() !== null) {
+					connectionPoint.checkConnection();
+					if (connectionPoint.getConnectionStatus() === "disconnected") {
+						this.#rectangulars[index].updateConnectionPointEdge();
+					}
+
+					// else - check if it was attached to any rectangular edge during transform
+				} else {
+					this.#rectangulars[index].updateConnectionPointEdge();
+				}
+
 				connectionPoint.setRelativePosition({
 					x: currentConnectionPointPosition.x - currentRectPosition.x,
 					y: currentConnectionPointPosition.y - currentRectPosition.y,

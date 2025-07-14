@@ -11,6 +11,9 @@ import ValueInputGroup from "@/components/ValueInputGroup/ValueInputGroup";
 import ValueInput from "@/components/ValueInput/ValueInput";
 import InputBlock from "@/components/InputBlock/InputBlock";
 import { Size } from "@/canvas/RectConnectionFeature/types/Size.type";
+import { dataConverter } from "@/lib/dataConverter";
+import { RuntimeException } from "@/canvas/RectConnectionFeature/subclasses/RuntimeException.class";
+import Button from "@/components/Button/Button";
 
 export interface RectangularPositionChangeParams {
 	index: number;
@@ -110,6 +113,21 @@ export default function Home() {
 
 	const [connectionPath, setConnectionPath] = useState<Point[] | null>(null);
 
+	const buildPath = useCallback(() => {
+		console.log("Building path.");
+
+		const newPath = dataConverter(
+			rectangulars[0],
+			rectangulars[1],
+			connectionPoints[0],
+			connectionPoints[1]
+		);
+
+		if (!(newPath instanceof RuntimeException)) {
+			setConnectionPath(newPath);
+		}
+	}, [connectionPoints, rectangulars]);
+
 	return (
 		<main className={styles["page-wrapper"]}>
 			<RectConnectionFeature
@@ -119,6 +137,9 @@ export default function Home() {
 				connectionPoints={connectionPoints}
 				connectionPath={connectionPath}
 				handleRectangularPositionChange={handleRectangularPositionChange}
+				handleConnectionPointPositionChange={
+					handleConnectionPointPositionChange
+				}
 			/>
 			<Sidebar position="right">
 				<InputBlock title="Rectangular 1">
@@ -318,6 +339,7 @@ export default function Home() {
 						/>
 					</ValueInputGroup>
 				</InputBlock>
+				<Button text="Build path" onClick={buildPath} />
 			</Sidebar>
 		</main>
 	);

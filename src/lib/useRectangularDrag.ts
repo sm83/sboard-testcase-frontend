@@ -1,5 +1,9 @@
-import { RectangularPositionChangeParams } from "@/app/page";
+import {
+	ConnectionPointPositionChangeParams,
+	RectangularPositionChangeParams,
+} from "@/app/page";
 import RectConnectionFeatureCanvas from "@/canvas/RectConnectionFeature/RectConnectionFeatureCanvas";
+import { InitException } from "@/canvas/RectConnectionFeature/subclasses/InitException.class";
 import { MouseEventHandler, useCallback, useState } from "react";
 
 // TODO: decompose interface
@@ -7,6 +11,7 @@ const useRectangularDrag = ({
 	canvas,
 	canvasFeature,
 	handleRectangularPositionChange,
+	handleConnectionPointPositionChange,
 }: {
 	canvas: HTMLCanvasElement | null;
 	canvasFeature: RectConnectionFeatureCanvas | null;
@@ -14,6 +19,10 @@ const useRectangularDrag = ({
 		index,
 		newPosition,
 	}: RectangularPositionChangeParams) => void;
+	handleConnectionPointPositionChange: ({
+		index,
+		newPosition,
+	}: ConnectionPointPositionChangeParams) => void;
 }) => {
 	const [rectToMove, setRectToMove] = useState<number | null>(null);
 	const [cursorOffset, setCursorOffset] = useState<{
@@ -87,6 +96,27 @@ const useRectangularDrag = ({
 					y: mouseY - cursorOffset.y,
 				};
 
+				const rectangular = canvasFeature.getRectangulars()[rectToMove];
+				const connectionPoint = rectangular.getConnectionPoint();
+
+				if (!(connectionPoint instanceof InitException)) {
+					if (
+						connectionPoint.getEdge() !== null &&
+						connectionPoint.getConnectionStatus() === "connected"
+					) {
+						const connectionPointRelativePosition =
+							connectionPoint.getRelativePosition();
+
+						handleConnectionPointPositionChange({
+							index: rectToMove,
+							newPosition: {
+								x: newRectangularPosition.x + connectionPointRelativePosition.x,
+								y: newRectangularPosition.y + connectionPointRelativePosition.y,
+							},
+						});
+					}
+				}
+
 				handleRectangularPositionChange({
 					index: rectToMove,
 					newPosition: newRectangularPosition,
@@ -97,6 +127,7 @@ const useRectangularDrag = ({
 			canvas,
 			canvasFeature,
 			cursorOffset,
+			handleConnectionPointPositionChange,
 			handleRectangularPositionChange,
 			rectToMove,
 		]
