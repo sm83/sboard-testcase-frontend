@@ -77,11 +77,17 @@ const RectConnectionFeature = ({
 				ctx,
 				rectangulars: initialRectangulars,
 				connectionPoints: initialConnectionPoints,
-				connectionPath: null,
+				connectionPath,
 			});
 			setCanvasFeature(rectConnectionFeature);
 		}
-	}, [canvas, ctx, initialConnectionPoints, initialRectangulars]);
+	}, [
+		canvas,
+		connectionPath,
+		ctx,
+		initialConnectionPoints,
+		initialRectangulars,
+	]);
 
 	// updating rectangulars
 	useEffect(() => {

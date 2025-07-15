@@ -515,7 +515,7 @@ const heuristicPathSearch = ({
 	start: Point;
 	end: Point;
 	allEdges: RectEdge[];
-}) => {
+}): Point[] => {
 	const pathTree: PathNode = new PathNode({
 		currentBestSolution: { distance: null, nodePoints: [] },
 		allEdges,
@@ -524,7 +524,9 @@ const heuristicPathSearch = ({
 		parent: null,
 	});
 
-	console.log(pathTree);
+	return pathTree.currentBestSolution.nodePoints.map(
+		(nodePoint) => nodePoint.position as Point
+	);
 };
 
 // TODO: apply correct props format
@@ -550,12 +552,14 @@ export const dataConverter = (
 			"One of the connection points does not perpendicular to its edge."
 		);
 	} else {
-		heuristicPathSearch({
+		const path = heuristicPathSearch({
 			start: cPoint1WithOffset,
 			end: cPoint2WithOffset,
 			allEdges,
 		});
-	}
+		path.push(cPoint1.point);
+		path.unshift(cPoint2.point);
 
-	return [];
+		return path;
+	}
 };

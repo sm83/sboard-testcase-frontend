@@ -15,9 +15,9 @@ class ConnectionPathItem {
 
 	draw() {
 		this.#ctx.save();
-		this.#ctx.strokeStyle = `hsla(0, 0.00%, 0.00%, 1)`;
+		this.#ctx.strokeStyle = `red`;
 
-		this.#ctx.lineWidth = 1;
+		this.#ctx.lineWidth = 2;
 		this.#ctx.beginPath();
 
 		this.#connectionPath.forEach((pathPoint) => {

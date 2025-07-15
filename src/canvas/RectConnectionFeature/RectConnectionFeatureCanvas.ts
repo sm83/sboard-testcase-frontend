@@ -13,8 +13,8 @@ class RectConnectionFeatureCanvas {
 	#canvas: HTMLCanvasElement;
 	#ctx: CanvasRenderingContext2D;
 
+	// children instances
 	#rectangulars: [RectangularItem, RectangularItem];
-
 	#connectionPath: ConnectionPathItem | null = null;
 
 	#errors: AnyException[] = [];

@@ -2,7 +2,7 @@
 
 import RectConnectionFeature from "@/canvas/RectConnectionFeature/RectConnectionFeature";
 import styles from "./page.module.scss";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Rect } from "@/canvas/RectConnectionFeature/types/Rect.type";
 import { ConnectionPoint } from "@/canvas/RectConnectionFeature/types/ConnectionPoint.type";
 import { Point } from "@/canvas/RectConnectionFeature/types/Point.type";
@@ -127,6 +127,10 @@ export default function Home() {
 			setConnectionPath(newPath);
 		}
 	}, [connectionPoints, rectangulars]);
+
+	useEffect(() => {
+		console.log(connectionPath);
+	}, [connectionPath]);
 
 	return (
 		<main className={styles["page-wrapper"]}>
