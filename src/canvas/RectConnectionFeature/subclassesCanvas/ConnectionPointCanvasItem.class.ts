@@ -4,14 +4,11 @@ import { ConnectionPoint } from "../types/ConnectionPoint.type";
 import { Point } from "../types/Point.type";
 import { RuntimeException } from "../subclassesUtils/RuntimeException.class";
 import { showConstructionLogs } from "@/config";
-import RectangularCanvasItem from "./RectangularCanvasItem.class";
 import Edge from "../subclassesUtils/Edge.class";
 
-type ConnectionStatus = "connected" | "disconnected";
 type AngleStatus = "perpendicular" | "non perpendicular";
 
 class ConnectionPointCanvasItem {
-	#parent: RectangularCanvasItem;
 	#index: number;
 	#ctx: CanvasRenderingContext2D;
 	#pushError: (newError: AnyException) => void;
@@ -29,13 +26,11 @@ class ConnectionPointCanvasItem {
 	#edge: Edge | null;
 
 	// status
-	#connectionStatus: ConnectionStatus;
 	#angleStatus: AngleStatus;
 
 	// note: initial construction can appear only once
 	// and if there are no InitException in parrent class (Edge)
 	constructor(constructBody: {
-		parent: RectangularCanvasItem;
 		index: number;
 		ctx: CanvasRenderingContext2D;
 		pushError: (newError: AnyException) => void;
@@ -53,7 +48,6 @@ class ConnectionPointCanvasItem {
 			);
 		}
 
-		this.#parent = constructBody.parent;
 		this.#index = constructBody.index;
 		this.#ctx = constructBody.ctx;
 		this.#pushError = constructBody.pushError;
@@ -74,7 +68,6 @@ class ConnectionPointCanvasItem {
 		};
 
 		this.#edge = constructBody.edge;
-		this.#connectionStatus = "connected";
 		this.#angleStatus = "perpendicular";
 	}
 
@@ -99,17 +92,13 @@ class ConnectionPointCanvasItem {
 		return this.#edge;
 	}
 
-	getConnectionStatus() {
-		return this.#connectionStatus;
+	disconectEdge() {
+		this.#edge = null;
 	}
 
-	setEdge(newEdge: Edge | null) {
+	connectEdge(newEdge: Edge) {
 		this.#edge = newEdge;
 		this.#checkAngle();
-	}
-
-	setConnectionStatus(newStatus: ConnectionStatus) {
-		this.#connectionStatus = newStatus;
 	}
 
 	setNormalStatus(newStatus: AngleStatus) {
@@ -131,12 +120,16 @@ class ConnectionPointCanvasItem {
 				this.#angleStatus = "non perpendicular";
 
 				const exception = new RuntimeException(
-					"Connection Point is not perpendicular to its edge."
+					`Connection Point index: ${
+						this.#index
+					} is not perpendicular to its edge.`
 				);
 				this.#pushError(exception);
 			}
 		} else {
-			const exception = new RuntimeException("Connection Point has no edge 1.");
+			const exception = new RuntimeException(
+				`Connection Point index: ${this.#index} has no edge.`
+			);
 			this.#pushError(exception);
 
 			this.#angleStatus = "non perpendicular";
@@ -152,12 +145,12 @@ class ConnectionPointCanvasItem {
 			});
 
 			if (!isConnected) {
-				this.setEdge(null);
+				this.disconectEdge();
 			}
-
-			this.#connectionStatus = isConnected ? "connected" : "disconnected";
 		} else {
-			const exception = new RuntimeException("Connection Point has no edge 2.");
+			const exception = new RuntimeException(
+				`Connection Point index: ${this.#index} has no edge.`
+			);
 			this.#pushError(exception);
 		}
 	}
@@ -194,7 +187,7 @@ class ConnectionPointCanvasItem {
 		this.#ctx.save();
 		this.#ctx.lineWidth = 1;
 
-		if (this.#connectionStatus === "connected") {
+		if (this.#edge) {
 			this.#ctx.strokeStyle = `lightgreen`;
 		} else {
 			this.#ctx.strokeStyle = `red`;

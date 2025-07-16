@@ -125,6 +125,9 @@ class RectConnectionFeatureCanvas {
 					newRectangulars[index].size.height
 				);
 			}
+
+			// checking connection point connection. вот так
+			this.#rectangulars[index].checkAndUpdateConnectionPointEdge();
 		});
 
 		this.#drawAll();
@@ -157,6 +160,9 @@ class RectConnectionFeatureCanvas {
 					});
 				}
 
+				// checking connection point connection. вот так
+				this.#rectangulars[index].checkAndUpdateConnectionPointEdge();
+
 				// and after all transformations of connection point
 				// we are updating relativePosition
 				const currentRectPosition = this.#rectangulars[index].getPosition();
@@ -164,18 +170,6 @@ class RectConnectionFeatureCanvas {
 
 				// updating relative position. if its a new value - connection point instance
 				// will proceed checkConnection method.
-
-				// if edge assigned - check if it still connected
-				if (connectionPoint.getEdge() !== null) {
-					connectionPoint.checkConnection();
-					if (connectionPoint.getConnectionStatus() === "disconnected") {
-						this.#rectangulars[index].updateConnectionPointEdge();
-					}
-
-					// else - check if it was attached to any rectangular edge during transform
-				} else {
-					this.#rectangulars[index].updateConnectionPointEdge();
-				}
 
 				connectionPoint.setRelativePosition({
 					x: currentConnectionPointPosition.x - currentRectPosition.x,
@@ -195,24 +189,28 @@ class RectConnectionFeatureCanvas {
 			!(cPointItem1 instanceof InitException) &&
 			!(cPointItem2 instanceof InitException)
 		) {
-			const rect1 = this.#rectangulars[0].getState();
-			const rect2 = this.#rectangulars[1].getState();
-			const cPoint1 = cPointItem1.getState();
-			const cPoint2 = cPointItem2.getState();
+			if (cPointItem1.getEdge() && cPointItem2.getEdge()) {
+				const rect1 = this.#rectangulars[0].getState();
+				const rect2 = this.#rectangulars[1].getState();
+				const cPoint1 = cPointItem1.getState();
+				const cPoint2 = cPointItem2.getState();
 
-			const newPath = dataConverter(rect1, rect2, cPoint1, cPoint2);
+				const newPath = dataConverter(rect1, rect2, cPoint1, cPoint2);
 
-			if (!(newPath instanceof RuntimeException)) {
-				if (this.#connectionPath === null) {
-					this.#connectionPath = new ConnectionPathCanvasItem({
-						ctx: this.#ctx,
-						connectionPath: newPath,
-					});
-				} else {
-					this.#connectionPath?.update(newPath);
+				if (!(newPath instanceof RuntimeException)) {
+					if (this.#connectionPath === null) {
+						this.#connectionPath = new ConnectionPathCanvasItem({
+							ctx: this.#ctx,
+							connectionPath: newPath,
+						});
+					} else {
+						this.#connectionPath?.update(newPath);
+					}
+
+					this.#drawAll();
 				}
-
-				this.#drawAll();
+			} else {
+				this.#connectionPath?.update([]);
 			}
 		}
 	}

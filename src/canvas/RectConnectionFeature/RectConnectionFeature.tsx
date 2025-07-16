@@ -101,6 +101,11 @@ const RectConnectionFeature = forwardRef<
 		useEffect(() => {
 			canvasFeature?.updateRectangulars({ newRectangulars: rectangulars });
 
+			canvasFeature
+				?.getConnectionPointsFromRectangulars()
+				.forEach((connectionPoint) => {
+					connectionPoint.checkConnection();
+				});
 			canvasFeature?.updateConnectionPath();
 		}, [canvasFeature, rectangulars]);
 
@@ -110,6 +115,11 @@ const RectConnectionFeature = forwardRef<
 				newConnectionPoints: connectionPoints,
 			});
 
+			canvasFeature
+				?.getConnectionPointsFromRectangulars()
+				.forEach((connectionPoint) => {
+					connectionPoint.checkConnection();
+				});
 			canvasFeature?.updateConnectionPath();
 		}, [canvasFeature, connectionPoints]);
 
@@ -157,7 +167,6 @@ const RectConnectionFeature = forwardRef<
 				canvas,
 				canvasFeature,
 				handleRectangularPositionChange,
-				handleConnectionPointPositionChange,
 			});
 
 		return (

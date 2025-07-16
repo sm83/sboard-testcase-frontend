@@ -1,10 +1,6 @@
 import RectConnectionFeatureCanvas from "@/canvas/RectConnectionFeature/RectConnectionFeatureCanvas";
-import { InitException } from "@/canvas/RectConnectionFeature/subclassesUtils/InitException.class";
 import { MouseEventHandler, useCallback, useState } from "react";
-import {
-	ConnectionPointPositionChangeParams,
-	RectangularPositionChangeParams,
-} from "./useInputDataChangeHandlers";
+import { RectangularPositionChangeParams } from "./useInputDataChangeHandlers";
 
 interface UseRectangularDragParams {
 	canvas: HTMLCanvasElement | null;
@@ -13,17 +9,12 @@ interface UseRectangularDragParams {
 		index,
 		newPosition,
 	}: RectangularPositionChangeParams) => void;
-	handleConnectionPointPositionChange: ({
-		index,
-		newPosition,
-	}: ConnectionPointPositionChangeParams) => void;
 }
 
 const useRectangularDrag = ({
 	canvas,
 	canvasFeature,
 	handleRectangularPositionChange,
-	handleConnectionPointPositionChange,
 }: UseRectangularDragParams) => {
 	const [rectToMove, setRectToMove] = useState<number | null>(null);
 	const [cursorOffset, setCursorOffset] = useState<{
@@ -97,27 +88,6 @@ const useRectangularDrag = ({
 					y: mouseY - cursorOffset.y,
 				};
 
-				const rectangular = canvasFeature.getRectangulars()[rectToMove];
-				const connectionPoint = rectangular.getConnectionPoint();
-
-				if (!(connectionPoint instanceof InitException)) {
-					if (
-						connectionPoint.getEdge() !== null &&
-						connectionPoint.getConnectionStatus() === "connected"
-					) {
-						const connectionPointRelativePosition =
-							connectionPoint.getRelativePosition();
-
-						handleConnectionPointPositionChange({
-							index: rectToMove,
-							newPosition: {
-								x: newRectangularPosition.x + connectionPointRelativePosition.x,
-								y: newRectangularPosition.y + connectionPointRelativePosition.y,
-							},
-						});
-					}
-				}
-
 				handleRectangularPositionChange({
 					index: rectToMove,
 					newPosition: newRectangularPosition,
@@ -128,7 +98,6 @@ const useRectangularDrag = ({
 			canvas,
 			canvasFeature,
 			cursorOffset,
-			handleConnectionPointPositionChange,
 			handleRectangularPositionChange,
 			rectToMove,
 		]

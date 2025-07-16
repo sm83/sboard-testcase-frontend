@@ -1,0 +1,27 @@
+services:
+  sboard-testcase-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sboard-testcase-frontend
+    networks:
+      - sboard-testcase-network
+    restart: always
+
+  sboard-testcase-nginx-frontend:
+    image: nginx:alpine
+    container_name: sboard-testcase-nginx-frontend
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - /etc/letsencrypt:/etc/letsencrypt # Добавлен том для сертификатов
+    ports:
+      - "443" # Открыт порт для HTTPS
+    depends_on:
+      - sboard-testcase-frontend
+    networks:
+      - sboard-testcase-network
+    restart: always
+
+networks:
+  sboard-testcase-network:
+    external: true

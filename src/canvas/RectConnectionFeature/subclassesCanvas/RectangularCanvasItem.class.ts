@@ -5,11 +5,11 @@ import { Size } from "../types/Size.type";
 import { InitException } from "../subclassesUtils/InitException.class";
 import isPointOnSegment from "@/lib/isPointOnSegment";
 import { AnyException } from "../types/AnyException.type";
-import { getRectangularVertices } from "@/canvas/RectConnectionFeature/utils/dataConverter";
 import { getRectBoundingAxes } from "@/lib/getRectBoundingAxes";
 import ConnectionPointCanvasItem from "./ConnectionPointCanvasItem.class";
 import { showConstructionLogs } from "@/config";
 import Edge from "../subclassesUtils/Edge.class";
+import { getRectangularVertices } from "../utils/getRectangularVertices";
 
 class RectangularCanvasItem {
 	#index: number;
@@ -62,7 +62,6 @@ class RectangularCanvasItem {
 
 	// construction methods code area
 
-	// TODO 1: remove duplicate code
 	// raw connection points data is provided in the constructor.
 	// actual connections instances creates as field of current instance, after connection is found.
 	#constructConnectionPoint(
@@ -89,7 +88,6 @@ class RectangularCanvasItem {
 
 				if (isConnected) {
 					return new ConnectionPointCanvasItem({
-						parent: this,
 						index: this.#index,
 						ctx: this.#ctx,
 						pushError: this.#pushError,
@@ -137,22 +135,22 @@ class RectangularCanvasItem {
 	}
 
 	// utils code
-	// TODO 1: remove duplicate code
-	updateConnectionPointEdge() {
+	checkAndUpdateConnectionPointEdge() {
 		if (!(this.#connectionPoint instanceof InitException)) {
-			for (const edge of this.#edges) {
-				const [vertice1, vertice2] = edge.getVertices();
-				const isConnected = isPointOnSegment({
-					vertice1,
-					vertice2,
-					targetVertice: this.#connectionPoint.getPosition(),
-				});
+			if (this.#connectionPoint.getEdge() === null) {
+				for (const edge of this.#edges) {
+					const [vertice1, vertice2] = edge.getVertices();
+					const isConnected = isPointOnSegment({
+						vertice1,
+						vertice2,
+						targetVertice: this.#connectionPoint.getPosition(),
+					});
 
-				if (isConnected) {
-					this.#connectionPoint.setEdge(edge);
-					this.#connectionPoint.setConnectionStatus("connected");
+					if (isConnected) {
+						this.#connectionPoint.connectEdge(edge);
 
-					return;
+						return;
+					}
 				}
 			}
 		}
