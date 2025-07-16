@@ -1,13 +1,18 @@
 import { AnyException } from "./types/AnyException.type";
 import { ConnectionPoint } from "./types/ConnectionPoint.type";
 import { Point } from "./types/Point.type";
-import { Rect } from "./types/Rect.type";
 import { InitException } from "./subclassesUtils/InitException.class";
 import { RuntimeException } from "./subclassesUtils/RuntimeException.class";
 import { dataConverter } from "@/canvas/RectConnectionFeature/utils/dataConverter";
 import RectangularCanvasItem from "./subclassesCanvas/RectangularCanvasItem.class";
 import ConnectionPointCanvasItem from "./subclassesCanvas/ConnectionPointCanvasItem.class";
 import ConnectionPathCanvasItem from "./subclassesCanvas/ConnectionPathCanvasItem.class";
+import {
+	showConstructionLogs,
+	showInitExceptions,
+	showRuntimeExceptions,
+} from "@/config";
+import { Rect } from "./types/Rect.type";
 
 class RectConnectionFeatureCanvas {
 	#canvas: HTMLCanvasElement;
@@ -19,15 +24,14 @@ class RectConnectionFeatureCanvas {
 
 	#errors: AnyException[] = [];
 	#pushError: (newError: AnyException) => void = (newError: AnyException) => {
-		// TODO: place it to .env
-		const debug = false;
-
-		if (debug && newError instanceof RuntimeException) {
+		// go see config.ts to manage it.
+		if (showRuntimeExceptions && newError instanceof RuntimeException) {
 			this.#errors.push(newError);
 			console.warn(newError);
 		}
 
-		if (newError instanceof InitException) {
+		// go see config.ts to manage it.
+		if (showInitExceptions && newError instanceof InitException) {
 			this.#errors.push(newError);
 			console.warn(newError);
 		}
@@ -42,7 +46,9 @@ class RectConnectionFeatureCanvas {
 		connectionPoints: [ConnectionPoint, ConnectionPoint] | null;
 		connectionPath: Point[] | null;
 	}) {
-		console.log("CONSTRUCTION: RectConnectionFeatureCanvas");
+		if (showConstructionLogs) {
+			console.log("CONSTRUCTION: RectConnectionFeatureCanvas");
+		}
 
 		this.#canvas = constructBody.canvas;
 		this.#ctx = constructBody.ctx;

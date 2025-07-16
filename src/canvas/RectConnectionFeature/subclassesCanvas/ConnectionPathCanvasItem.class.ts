@@ -19,7 +19,12 @@ class ConnectionPathCanvasItem {
 
 	draw() {
 		this.#ctx.save();
-		this.#ctx.strokeStyle = `red`;
+
+		if (this.#connectionPath.length <= 2) {
+			this.#ctx.strokeStyle = `red`;
+		} else {
+			this.#ctx.strokeStyle = `#4ef542`;
+		}
 
 		this.#ctx.lineWidth = 2;
 		this.#ctx.beginPath();

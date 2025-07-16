@@ -1,10 +1,10 @@
-import {
-	ConnectionPointPositionChangeParams,
-	RectangularPositionChangeParams,
-} from "@/app/page";
 import RectConnectionFeatureCanvas from "@/canvas/RectConnectionFeature/RectConnectionFeatureCanvas";
 import { InitException } from "@/canvas/RectConnectionFeature/subclassesUtils/InitException.class";
 import { MouseEventHandler, useCallback, useState } from "react";
+import {
+	ConnectionPointPositionChangeParams,
+	RectangularPositionChangeParams,
+} from "./useInputDataChangeHandlers";
 
 interface UseRectangularDragParams {
 	canvas: HTMLCanvasElement | null;

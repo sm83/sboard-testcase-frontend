@@ -2,13 +2,14 @@ import { ConnectionPoint } from "../types/ConnectionPoint.type";
 import { Point } from "../types/Point.type";
 import { Rect } from "../types/Rect.type";
 import { Size } from "../types/Size.type";
-import RectangularEdgeItem from "../subclassesUtils/RectangularEdge.class";
 import { InitException } from "../subclassesUtils/InitException.class";
 import isPointOnSegment from "@/lib/isPointOnSegment";
 import { AnyException } from "../types/AnyException.type";
 import { getRectangularVertices } from "@/canvas/RectConnectionFeature/utils/dataConverter";
 import { getRectBoundingAxes } from "@/lib/getRectBoundingAxes";
 import ConnectionPointCanvasItem from "./ConnectionPointCanvasItem.class";
+import { showConstructionLogs } from "@/config";
+import Edge from "../subclassesUtils/Edge.class";
 
 class RectangularCanvasItem {
 	#index: number;
@@ -22,10 +23,10 @@ class RectangularCanvasItem {
 
 	// memory
 	#vertices: Point[];
-	#edges: RectangularEdgeItem[];
 
 	// child instances
 	#connectionPoint: ConnectionPointCanvasItem | InitException;
+	#edges: Edge[];
 
 	constructor(constructBody: {
 		index: number;
@@ -36,10 +37,12 @@ class RectangularCanvasItem {
 		rectangular: Rect;
 		connectionPoints: [ConnectionPoint, ConnectionPoint] | null;
 	}) {
-		console.log(
-			"CONSTRUCTION: RectangularCanvasItem, index:",
-			constructBody.index
-		);
+		if (showConstructionLogs) {
+			console.log(
+				"CONSTRUCTION: RectangularCanvasItem, index:",
+				constructBody.index
+			);
+		}
 
 		this.#index = constructBody.index;
 		this.#canvas = constructBody.canvas;
@@ -50,7 +53,7 @@ class RectangularCanvasItem {
 		this.#size = constructBody.rectangular.size;
 
 		this.#vertices = this.#calculateVertices();
-		this.#edges = this.#calculateEdges();
+		this.#edges = this.#constructEdges();
 
 		this.#connectionPoint = this.#constructConnectionPoint(
 			constructBody.connectionPoints
@@ -59,6 +62,7 @@ class RectangularCanvasItem {
 
 	// construction methods code area
 
+	// TODO 1: remove duplicate code
 	// raw connection points data is provided in the constructor.
 	// actual connections instances creates as field of current instance, after connection is found.
 	#constructConnectionPoint(
@@ -74,15 +78,18 @@ class RectangularCanvasItem {
 		}
 
 		for (const connectionPoint of connectionPoints) {
-			for (const edge of this.getEdges()) {
+			for (const edge of this.#edges) {
+				const [vertice1, vertice2] = edge.getVertices();
+
 				const isConnected = isPointOnSegment({
-					vertice1: edge.vertice1,
-					vertice2: edge.vertice2,
+					vertice1,
+					vertice2,
 					targetVertice: connectionPoint.point,
 				});
 
 				if (isConnected) {
 					return new ConnectionPointCanvasItem({
+						parent: this,
 						index: this.#index,
 						ctx: this.#ctx,
 						pushError: this.#pushError,
@@ -126,16 +133,18 @@ class RectangularCanvasItem {
 	}
 
 	getEdges() {
-		return this.#edges.map((edge) => edge.getState());
+		return this.#edges;
 	}
 
 	// utils code
+	// TODO 1: remove duplicate code
 	updateConnectionPointEdge() {
 		if (!(this.#connectionPoint instanceof InitException)) {
-			for (const edge of this.getEdges()) {
+			for (const edge of this.#edges) {
+				const [vertice1, vertice2] = edge.getVertices();
 				const isConnected = isPointOnSegment({
-					vertice1: edge.vertice1,
-					vertice2: edge.vertice2,
+					vertice1,
+					vertice2,
 					targetVertice: this.#connectionPoint.getPosition(),
 				});
 
@@ -156,29 +165,40 @@ class RectangularCanvasItem {
 		});
 	}
 
-	#calculateEdges() {
+	#constructEdges() {
 		return [
-			new RectangularEdgeItem({
+			new Edge({
 				vertice1: this.#vertices[0],
 				vertice2: this.#vertices[1],
 				alignmentNormal: 90,
+				id: Symbol("Edge id"),
 			}),
-			new RectangularEdgeItem({
+			new Edge({
 				vertice1: this.#vertices[1],
 				vertice2: this.#vertices[2],
 				alignmentNormal: 180,
+				id: Symbol("Edge id"),
 			}),
-			new RectangularEdgeItem({
+			new Edge({
 				vertice1: this.#vertices[2],
 				vertice2: this.#vertices[3],
 				alignmentNormal: 270,
+				id: Symbol("Edge id"),
 			}),
-			new RectangularEdgeItem({
+			new Edge({
 				vertice1: this.#vertices[3],
 				vertice2: this.#vertices[0],
 				alignmentNormal: 0,
+				id: Symbol("Edge id"),
 			}),
 		];
+	}
+
+	#updateEdges() {
+		this.#edges[0].updateVertices(this.#vertices[0], this.#vertices[1]);
+		this.#edges[1].updateVertices(this.#vertices[1], this.#vertices[2]);
+		this.#edges[2].updateVertices(this.#vertices[2], this.#vertices[3]);
+		this.#edges[3].updateVertices(this.#vertices[3], this.#vertices[0]);
 	}
 
 	// essentials
@@ -186,7 +206,7 @@ class RectangularCanvasItem {
 		this.#position = { x, y };
 
 		this.#vertices = this.#calculateVertices();
-		this.#edges = this.#calculateEdges();
+		this.#updateEdges();
 	}
 
 	resize(width: number, height: number) {
@@ -227,7 +247,7 @@ class RectangularCanvasItem {
 		}
 
 		this.#vertices = this.#calculateVertices();
-		this.#edges = this.#calculateEdges();
+		this.#updateEdges();
 	}
 
 	// render

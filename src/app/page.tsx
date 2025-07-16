@@ -1,51 +1,28 @@
 "use client";
 
-import RectConnectionFeature from "@/canvas/RectConnectionFeature/RectConnectionFeature";
+import RectConnectionFeature, {
+	RectConnectionFeatureRef,
+} from "@/canvas/RectConnectionFeature/RectConnectionFeature";
 import styles from "./page.module.scss";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Rect } from "@/canvas/RectConnectionFeature/types/Rect.type";
 import { ConnectionPoint } from "@/canvas/RectConnectionFeature/types/ConnectionPoint.type";
-import { Point } from "@/canvas/RectConnectionFeature/types/Point.type";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import ValueInputGroup from "@/components/ValueInputGroup/ValueInputGroup";
 import ValueInput from "@/components/ValueInput/ValueInput";
 import InputBlock from "@/components/InputBlock/InputBlock";
-import { Size } from "@/canvas/RectConnectionFeature/types/Size.type";
 import Button from "@/components/Button/Button";
 import { dataConverter } from "@/canvas/RectConnectionFeature/utils/dataConverter";
-import { isPointIntersectsRect } from "@/lib/isPointIntersectsRect";
-import { getRectBoundingAxes } from "@/lib/getRectBoundingAxes";
-import { getRelativeOrientation } from "@/lib/getRelativeOrientation";
-import getEnlargeDirection from "@/lib/getEnlargeDirection";
-
-export interface RectangularPositionChangeParams {
-	index: number;
-	newPosition: Point;
-}
-
-export interface RectangularSizeChangeParams {
-	index: number;
-	newSize: Size;
-}
-
-export interface ConnectionPointPositionChangeParams {
-	index: number;
-	newPosition: Point;
-}
-
-export interface ConnectionPointAngleChangeParams {
-	index: number;
-	newAngle: number;
-}
+import useRectConnectionFeature from "@/canvas/RectConnectionFeature/hooks/useRectConnectionFeature";
 
 const initialRectangulars: [Rect, Rect] = [
 	{ position: { x: 0, y: 0 }, size: { height: 100, width: 200 } },
-	{ position: { x: 518, y: 244 }, size: { height: 100, width: 200 } },
+	{ position: { x: 100, y: 150 }, size: { height: 100, width: 200 } },
 ];
 
 const initialConnectionPoints: [ConnectionPoint, ConnectionPoint] = [
 	{ point: { x: 50, y: -50 }, angle: 180 },
-	{ point: { x: 588, y: 294 }, angle: 0 },
+	{ point: { x: 100, y: 200 }, angle: 0 },
 ];
 
 export default function Home() {
@@ -56,154 +33,55 @@ export default function Home() {
 		[ConnectionPoint, ConnectionPoint]
 	>(initialConnectionPoints);
 
-	const handleConnectionPointPositionChange = useCallback(
-		({ index, newPosition }: ConnectionPointPositionChangeParams): void => {
-			setConnectionPoints((prev) => {
-				const connectionPoints = [...prev] as [
-					ConnectionPoint,
-					ConnectionPoint
-				];
-
-				connectionPoints[index].point = newPosition;
-
-				return connectionPoints;
-			});
-		},
-		[]
+	const rectConnectionFeatureRef = useRef<RectConnectionFeatureRef | null>(
+		null
 	);
 
-	const handleConnectionPointAngleChange = useCallback(
-		({ index, newAngle }: ConnectionPointAngleChangeParams): void => {
-			setConnectionPoints((prev) => {
-				const connectionPoints = [...prev] as [
-					ConnectionPoint,
-					ConnectionPoint
-				];
-
-				connectionPoints[index].angle = newAngle;
-
-				return connectionPoints;
-			});
-		},
-		[]
-	);
-
-	const handleRectangularPositionChange = useCallback(
-		({ index, newPosition }: RectangularPositionChangeParams): void => {
-			{
-				const [left, right, top, bottom] = getRectBoundingAxes({
-					rect: rectangulars[index],
-				});
-				const connectionPoint = connectionPoints[index];
-
-				if (
-					isPointIntersectsRect({
-						point: connectionPoint.point,
-						left,
-						right,
-						top,
-						bottom,
-					})
-				) {
-					const xOffset = newPosition.x - rectangulars[index].position.x;
-					const yOffset = newPosition.y - rectangulars[index].position.y;
-
-					handleConnectionPointPositionChange({
-						index,
-						newPosition: {
-							x: connectionPoint.point.x + xOffset,
-							y: connectionPoint.point.y + yOffset,
-						},
-					});
-				}
-			}
-
-			setRectangulars((prev) => {
-				const newRectangulars = [...prev] as [Rect, Rect];
-
-				newRectangulars[index].position = newPosition;
-
-				return newRectangulars;
-			});
-		},
-		[connectionPoints, handleConnectionPointPositionChange, rectangulars]
-	);
-
-	const handleRectangularSizeChange = useCallback(
-		({ index, newSize }: RectangularSizeChangeParams): void => {
-			{
-				const [left, right, top, bottom] = getRectBoundingAxes({
-					rect: rectangulars[index],
-				});
-				const connectionPoint = connectionPoints[index];
-				const connectionPointRelativeOrientation = getRelativeOrientation(
-					connectionPoint.angle
-				);
-
-				if (
-					isPointIntersectsRect({
-						point: connectionPoint.point,
-						left,
-						right,
-						top,
-						bottom,
-					})
-				) {
-					const xOffset =
-						((newSize.width - rectangulars[index].size.width) / 2) *
-						getEnlargeDirection({
-							relativeOrientation: connectionPointRelativeOrientation,
-							axis: "x",
-						});
-					const yOffset =
-						((newSize.height - rectangulars[index].size.height) / 2) *
-						getEnlargeDirection({
-							relativeOrientation: connectionPointRelativeOrientation,
-							axis: "y",
-						});
-
-					handleConnectionPointPositionChange({
-						index,
-						newPosition: {
-							x: connectionPoint.point.x + xOffset,
-							y: connectionPoint.point.y + yOffset,
-						},
-					});
-				}
-			}
-
-			setRectangulars((prev) => {
-				const newRectangulars = [...prev] as [Rect, Rect];
-
-				newRectangulars[index].size = newSize;
-
-				return newRectangulars;
-			});
-		},
-		[connectionPoints, handleConnectionPointPositionChange, rectangulars]
-	);
-
+	// feel free to take performance measurements here.
 	const buildPath = useCallback(() => {
-		dataConverter(
-			rectangulars[0],
-			rectangulars[1],
-			connectionPoints[0],
-			connectionPoints[1],
-			true
-		);
+		// ATTENTION!
+		// set useDebug to false to avoid perfomance violation by console.
+		const useDebug = true;
+
+		const iterations = 1;
+
+		for (let i = 0; i < iterations; i++) {
+			dataConverter(
+				rectangulars[0],
+				rectangulars[1],
+				connectionPoints[0],
+				connectionPoints[1],
+				useDebug
+			);
+		}
 	}, [connectionPoints, rectangulars]);
+
+	// ready to use methods, which controls <RectConnectionFeature>
+
+	// warning: uses ImperativeHandle methods from rectConnectionFeatureRef.
+	// code of this hook might be non-obvious because useImperativeHandle
+	// breaks React patterns, but in a controlled way.
+	const {
+		handleRectangularPositionChange,
+		handleRectangularSizeChange,
+		handleConnectionPointPositionChange,
+		handleConnectionPointAngleChange,
+	} = useRectConnectionFeature({
+		rectangulars,
+		connectionPoints,
+		rectConnectionFeatureRef,
+	});
 
 	return (
 		<main className={styles["page-wrapper"]}>
 			<RectConnectionFeature
+				ref={rectConnectionFeatureRef}
 				initialRectangulars={initialRectangulars}
 				rectangulars={rectangulars}
+				setRectangulars={setRectangulars}
 				initialConnectionPoints={initialConnectionPoints}
 				connectionPoints={connectionPoints}
-				handleRectangularPositionChange={handleRectangularPositionChange}
-				handleConnectionPointPositionChange={
-					handleConnectionPointPositionChange
-				}
+				setConnectionPoints={setConnectionPoints}
 			/>
 			<Sidebar position="right">
 				<InputBlock title="Rectangular 1">
@@ -212,26 +90,14 @@ export default function Home() {
 							name={"X:"}
 							value={rectangulars[0].position.x}
 							onChange={(e) => {
-								handleRectangularPositionChange({
-									index: 0,
-									newPosition: {
-										...rectangulars[0].position,
-										x: +e.target.value,
-									},
-								});
+								handleRectangularPositionChange({ e, field: "x", index: 0 });
 							}}
 						/>
 						<ValueInput
 							name={"Y:"}
 							value={rectangulars[0].position.y}
 							onChange={(e) => {
-								handleRectangularPositionChange({
-									index: 0,
-									newPosition: {
-										...rectangulars[0].position,
-										y: +e.target.value,
-									},
-								});
+								handleRectangularPositionChange({ e, field: "y", index: 0 });
 							}}
 						/>
 					</ValueInputGroup>
@@ -240,26 +106,14 @@ export default function Home() {
 							name={"W:"}
 							value={rectangulars[0].size.width}
 							onChange={(e) => {
-								handleRectangularSizeChange({
-									index: 0,
-									newSize: {
-										...rectangulars[0].size,
-										width: +e.target.value,
-									},
-								});
+								handleRectangularSizeChange({ e, field: "width", index: 0 });
 							}}
 						/>
 						<ValueInput
 							name={"H:"}
 							value={rectangulars[0].size.height}
 							onChange={(e) => {
-								handleRectangularSizeChange({
-									index: 0,
-									newSize: {
-										...rectangulars[0].size,
-										height: +e.target.value,
-									},
-								});
+								handleRectangularSizeChange({ e, field: "height", index: 0 });
 							}}
 						/>
 					</ValueInputGroup>
@@ -271,11 +125,9 @@ export default function Home() {
 							value={connectionPoints[0].point.x}
 							onChange={(e) => {
 								handleConnectionPointPositionChange({
+									e,
+									field: "x",
 									index: 0,
-									newPosition: {
-										...connectionPoints[0].point,
-										x: +e.target.value,
-									},
 								});
 							}}
 						/>
@@ -284,11 +136,9 @@ export default function Home() {
 							value={connectionPoints[0].point.y}
 							onChange={(e) => {
 								handleConnectionPointPositionChange({
+									e,
+									field: "y",
 									index: 0,
-									newPosition: {
-										...connectionPoints[0].point,
-										y: +e.target.value,
-									},
 								});
 							}}
 						/>
@@ -296,10 +146,7 @@ export default function Home() {
 							name={"Angle:"}
 							value={connectionPoints[0].angle}
 							onChange={(e) => {
-								handleConnectionPointAngleChange({
-									index: 0,
-									newAngle: +e.target.value,
-								});
+								handleConnectionPointAngleChange({ e, index: 0 });
 							}}
 						/>
 					</ValueInputGroup>
@@ -311,26 +158,14 @@ export default function Home() {
 							name={"X:"}
 							value={rectangulars[1].position.x}
 							onChange={(e) => {
-								handleRectangularPositionChange({
-									index: 1,
-									newPosition: {
-										...rectangulars[1].position,
-										x: +e.target.value,
-									},
-								});
+								handleRectangularPositionChange({ e, field: "x", index: 1 });
 							}}
 						/>
 						<ValueInput
 							name={"Y:"}
 							value={rectangulars[1].position.y}
 							onChange={(e) => {
-								handleRectangularPositionChange({
-									index: 1,
-									newPosition: {
-										...rectangulars[1].position,
-										y: +e.target.value,
-									},
-								});
+								handleRectangularPositionChange({ e, field: "y", index: 1 });
 							}}
 						/>
 					</ValueInputGroup>
@@ -339,26 +174,14 @@ export default function Home() {
 							name={"W:"}
 							value={rectangulars[1].size.width}
 							onChange={(e) => {
-								handleRectangularSizeChange({
-									index: 1,
-									newSize: {
-										...rectangulars[1].size,
-										width: +e.target.value,
-									},
-								});
+								handleRectangularSizeChange({ e, field: "width", index: 1 });
 							}}
 						/>
 						<ValueInput
 							name={"H:"}
 							value={rectangulars[1].size.height}
 							onChange={(e) => {
-								handleRectangularSizeChange({
-									index: 1,
-									newSize: {
-										...rectangulars[1].size,
-										height: +e.target.value,
-									},
-								});
+								handleRectangularSizeChange({ e, field: "height", index: 1 });
 							}}
 						/>
 					</ValueInputGroup>
@@ -370,11 +193,9 @@ export default function Home() {
 							value={connectionPoints[1].point.x}
 							onChange={(e) => {
 								handleConnectionPointPositionChange({
+									e,
+									field: "x",
 									index: 1,
-									newPosition: {
-										...connectionPoints[1].point,
-										x: +e.target.value,
-									},
 								});
 							}}
 						/>
@@ -383,11 +204,9 @@ export default function Home() {
 							value={connectionPoints[1].point.y}
 							onChange={(e) => {
 								handleConnectionPointPositionChange({
+									e,
+									field: "y",
 									index: 1,
-									newPosition: {
-										...connectionPoints[1].point,
-										y: +e.target.value,
-									},
 								});
 							}}
 						/>
@@ -395,15 +214,12 @@ export default function Home() {
 							name={"Angle:"}
 							value={connectionPoints[1].angle}
 							onChange={(e) => {
-								handleConnectionPointAngleChange({
-									index: 1,
-									newAngle: +e.target.value,
-								});
+								handleConnectionPointAngleChange({ e, index: 1 });
 							}}
 						/>
 					</ValueInputGroup>
 				</InputBlock>
-				<Button text="Console Node Tree" onClick={buildPath} />
+				<Button text="Run 'dataConverter'" onClick={buildPath} />
 			</Sidebar>
 		</main>
 	);

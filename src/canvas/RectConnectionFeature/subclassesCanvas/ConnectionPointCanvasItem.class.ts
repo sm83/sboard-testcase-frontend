@@ -1,14 +1,17 @@
 import isPointOnSegment from "@/lib/isPointOnSegment";
 import { AnyException } from "../types/AnyException.type";
 import { ConnectionPoint } from "../types/ConnectionPoint.type";
-import { Edge } from "../types/Edge.type";
 import { Point } from "../types/Point.type";
 import { RuntimeException } from "../subclassesUtils/RuntimeException.class";
+import { showConstructionLogs } from "@/config";
+import RectangularCanvasItem from "./RectangularCanvasItem.class";
+import Edge from "../subclassesUtils/Edge.class";
 
 type ConnectionStatus = "connected" | "disconnected";
 type AngleStatus = "perpendicular" | "non perpendicular";
 
 class ConnectionPointCanvasItem {
+	#parent: RectangularCanvasItem;
 	#index: number;
 	#ctx: CanvasRenderingContext2D;
 	#pushError: (newError: AnyException) => void;
@@ -30,8 +33,9 @@ class ConnectionPointCanvasItem {
 	#angleStatus: AngleStatus;
 
 	// note: initial construction can appear only once
-	// and if there are no InitException in parrent class (RectangularEdgeItem)
+	// and if there are no InitException in parrent class (Edge)
 	constructor(constructBody: {
+		parent: RectangularCanvasItem;
 		index: number;
 		ctx: CanvasRenderingContext2D;
 		pushError: (newError: AnyException) => void;
@@ -42,11 +46,14 @@ class ConnectionPointCanvasItem {
 		rectangularPosition: Point;
 		edge: Edge;
 	}) {
-		console.log(
-			"CONSTRUCTION: ConnectionPointCanvasItem, index:",
-			constructBody.index
-		);
+		if (showConstructionLogs) {
+			console.log(
+				"CONSTRUCTION: ConnectionPointCanvasItem, index:",
+				constructBody.index
+			);
+		}
 
+		this.#parent = constructBody.parent;
 		this.#index = constructBody.index;
 		this.#ctx = constructBody.ctx;
 		this.#pushError = constructBody.pushError;
@@ -96,7 +103,6 @@ class ConnectionPointCanvasItem {
 		return this.#connectionStatus;
 	}
 
-	// setters code area
 	setEdge(newEdge: Edge | null) {
 		this.#edge = newEdge;
 		this.#checkAngle();
@@ -119,7 +125,7 @@ class ConnectionPointCanvasItem {
 	// inner status checks code area
 	#checkAngle(): void {
 		if (this.#edge) {
-			if (this.#angle === this.#edge.alignmentNormal) {
+			if (this.#angle === this.#edge.getAlignmentNormal()) {
 				this.#angleStatus = "perpendicular";
 			} else {
 				this.#angleStatus = "non perpendicular";
@@ -130,7 +136,7 @@ class ConnectionPointCanvasItem {
 				this.#pushError(exception);
 			}
 		} else {
-			const exception = new RuntimeException("Connection Point has no edge.");
+			const exception = new RuntimeException("Connection Point has no edge 1.");
 			this.#pushError(exception);
 
 			this.#angleStatus = "non perpendicular";
@@ -140,8 +146,8 @@ class ConnectionPointCanvasItem {
 	checkConnection(): void {
 		if (this.#edge) {
 			const isConnected = isPointOnSegment({
-				vertice1: this.#edge.vertice1,
-				vertice2: this.#edge.vertice2,
+				vertice1: this.#edge.getVertices()[0],
+				vertice2: this.#edge.getVertices()[1],
 				targetVertice: this.#position,
 			});
 
@@ -151,7 +157,7 @@ class ConnectionPointCanvasItem {
 
 			this.#connectionStatus = isConnected ? "connected" : "disconnected";
 		} else {
-			const exception = new RuntimeException("Connection Point has no edge.");
+			const exception = new RuntimeException("Connection Point has no edge 2.");
 			this.#pushError(exception);
 		}
 	}
