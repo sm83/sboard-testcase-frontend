@@ -115,8 +115,7 @@ export default function Home() {
 			rectangulars[0],
 			rectangulars[1],
 			connectionPoints[0],
-			connectionPoints[1],
-			true
+			connectionPoints[1]
 		);
 	}, [connectionPoints, rectangulars]);
 

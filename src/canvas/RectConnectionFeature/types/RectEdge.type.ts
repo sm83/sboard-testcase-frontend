@@ -1,11 +1,11 @@
+import PointNode from "../subclassesUtils/PointNode.class";
 import { AlignmentNormal } from "./AlignmentNormal.type";
 import { Point } from "./Point.type";
-import NodePoint from "./NodePoint.type";
 
 type RectEdge = {
 	vertices: [Point, Point];
 	extrudedVertices: [Point, Point];
-	nodePoints: [NodePoint, NodePoint];
+	pointNodes: [PointNode, PointNode];
 	normal: AlignmentNormal;
 	id: symbol;
 };

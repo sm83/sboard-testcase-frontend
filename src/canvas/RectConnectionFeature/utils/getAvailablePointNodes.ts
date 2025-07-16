@@ -1,70 +1,70 @@
-import NodePoint from "../types/NodePoint.type";
+import PointNode from "../subclassesUtils/PointNode.class";
 import { Point } from "../types/Point.type";
 import RectEdge from "../types/RectEdge.type";
 import { raycastIsIntersectingByAnyEdge } from "./raycast";
 
-export const getAvailableNodePoints = ({
+export const getAvailablePointNodes = ({
 	ray,
-	usedNodePoints,
+	usedPointNodes,
 	allEdges,
 }: {
 	ray: { start: Point; end: Point };
-	usedNodePoints: NodePoint[];
+	usedPointNodes: PointNode[];
 	allEdges: RectEdge[];
 }) => {
 	// getting all node points that intersected edges got
-	const allNodePoints: NodePoint[] = allEdges
-		.map((edge) => edge.nodePoints)
+	const allPointNodes: PointNode[] = allEdges
+		.map((edge) => edge.pointNodes)
 		.flat();
 
 	// filtering those which has correct flag false
-	const correctNodePoints = allNodePoints.filter(
-		(nodePoint) => nodePoint.correct
+	const correctPointNodes = allPointNodes.filter(
+		(pointNode) => pointNode.correct
 	);
 
 	// removing duplicates
-	const nodePointsDuplicatesFiltered: NodePoint[] = [];
-	correctNodePoints.forEach((nodePoint) => {
+	const pointNodesDuplicatesFiltered: PointNode[] = [];
+	correctPointNodes.forEach((pointNode) => {
 		if (
-			!nodePointsDuplicatesFiltered.find((nodePointAdded) => {
+			!pointNodesDuplicatesFiltered.find((pointNodeAdded) => {
 				return (
-					nodePointAdded.position.x === nodePoint.position.x &&
-					nodePointAdded.position.y === nodePoint.position.y
+					pointNodeAdded.position.x === pointNode.position.x &&
+					pointNodeAdded.position.y === pointNode.position.y
 				);
 			})
 		) {
-			nodePointsDuplicatesFiltered.push(nodePoint);
+			pointNodesDuplicatesFiltered.push(pointNode);
 		}
 	});
 
 	// removing already used
-	const nodePointsUsedFiltered: NodePoint[] = [];
-	nodePointsDuplicatesFiltered.forEach((nodePoint) => {
+	const pointNodesUsedFiltered: PointNode[] = [];
+	pointNodesDuplicatesFiltered.forEach((pointNode) => {
 		if (
-			!usedNodePoints.find((usedNodePoint) => {
+			!usedPointNodes.find((usedPointNode) => {
 				return (
-					usedNodePoint.position.x === nodePoint.position.x &&
-					usedNodePoint.position.y === nodePoint.position.y
+					usedPointNode.position.x === pointNode.position.x &&
+					usedPointNode.position.y === pointNode.position.y
 				);
 			})
 		) {
-			nodePointsUsedFiltered.push(nodePoint);
+			pointNodesUsedFiltered.push(pointNode);
 		}
 	});
 
 	// final array
-	const availableNodePoints: NodePoint[] = [];
-	// adding nodePoints, raycast to which doesnt blocked by any edges.
-	nodePointsUsedFiltered.forEach((nodePoint) => {
+	const availablePointNodes: PointNode[] = [];
+	// adding pointNodes, raycast to which doesnt blocked by any edges.
+	pointNodesUsedFiltered.forEach((pointNode) => {
 		if (
 			!raycastIsIntersectingByAnyEdge({
-				ray: { start: ray.start, end: nodePoint.position },
+				ray: { start: ray.start, end: pointNode.position },
 				edges: allEdges,
 			})
 		) {
-			availableNodePoints.push(nodePoint);
+			availablePointNodes.push(pointNode);
 		}
 	});
 
-	return availableNodePoints;
+	return availablePointNodes;
 };

@@ -3,12 +3,9 @@ import { Rect } from "@/canvas/RectConnectionFeature/types/Rect.type";
 import { ConnectionPoint } from "@/canvas/RectConnectionFeature/types/ConnectionPoint.type";
 import { RuntimeException } from "@/canvas/RectConnectionFeature/subclassesUtils/RuntimeException.class";
 import { AlignmentNormal } from "@/canvas/RectConnectionFeature/types/AlignmentNormal.type";
-import { isPointIntersectsRect } from "../../../lib/isPointIntersectsRect";
-import { getRectBoundingAxes } from "../../../lib/getRectBoundingAxes";
-import { getConnectionPointOffsetted } from "../../../lib/getConnectionPointOffsetted";
-import NodePoint from "../types/NodePoint.type";
 import RectEdge from "../types/RectEdge.type";
-import PathNode from "../subclassesCanvas/PathNode.class";
+import PathNode from "../subclassesUtils/PathNode.class";
+import PointNode from "../subclassesUtils/PointNode.class";
 
 const offsetDistance = 10;
 
@@ -37,94 +34,6 @@ export const getRectangularVertices = (
 			y: rect.position.y + rect.size.height / 2,
 		},
 	];
-};
-
-type VerticeAlignment =
-	| "bottom-right"
-	| "top-right"
-	| "top-left"
-	| "bottom-left";
-
-const getNodePointFromVertice = ({
-	vertice,
-	alignment,
-	otherRectangular,
-}: {
-	vertice: Point;
-	alignment: VerticeAlignment;
-	otherRectangular: Rect;
-}): NodePoint => {
-	const [left, right, top, bottom] = getRectBoundingAxes({
-		rect: otherRectangular,
-		offset: offsetDistance,
-	});
-
-	switch (alignment) {
-		case "bottom-right": {
-			const nodePointPosition: Point = {
-				x: vertice.x + offsetDistance,
-				y: vertice.y + offsetDistance,
-			};
-			return {
-				position: nodePointPosition,
-				correct: !isPointIntersectsRect({
-					point: nodePointPosition,
-					left,
-					right,
-					top,
-					bottom,
-				}),
-			};
-		}
-		case "top-right": {
-			const nodePointPosition: Point = {
-				x: vertice.x + offsetDistance,
-				y: vertice.y - offsetDistance,
-			};
-			return {
-				position: nodePointPosition,
-				correct: !isPointIntersectsRect({
-					point: nodePointPosition,
-					left,
-					right,
-					top,
-					bottom,
-				}),
-			};
-		}
-		case "top-left": {
-			const nodePointPosition: Point = {
-				x: vertice.x - offsetDistance,
-				y: vertice.y - offsetDistance,
-			};
-			return {
-				position: nodePointPosition,
-				correct: !isPointIntersectsRect({
-					point: nodePointPosition,
-					left,
-					right,
-					top,
-					bottom,
-				}),
-			};
-		}
-		case "bottom-left": {
-			const nodePointPosition: Point = {
-				x: vertice.x - offsetDistance,
-				y: vertice.y + offsetDistance,
-			};
-			return {
-				position: nodePointPosition,
-				correct: !isPointIntersectsRect({
-					point: nodePointPosition,
-					left,
-					right,
-					top,
-					bottom,
-				}),
-			};
-		}
-	}
 };
 
 const offsetVertice = (
@@ -158,18 +67,20 @@ const getRectangularsOffsettedEdges = ({
 						offsetVertice(vertices[0], offset, offset),
 						offsetVertice(vertices[1], offset, -offset),
 					] as [Point, Point],
-					nodePoints: [
-						getNodePointFromVertice({
+					pointNodes: [
+						new PointNode({
 							vertice: vertices[0],
 							alignment: "bottom-right",
+							offsetDistance: offset,
 							otherRectangular: rectangulars[index === 0 ? 1 : 0],
 						}),
-						getNodePointFromVertice({
+						new PointNode({
 							vertice: vertices[1],
 							alignment: "top-right",
+							offsetDistance: offset,
 							otherRectangular: rectangulars[index === 0 ? 1 : 0],
 						}),
-					] as [NodePoint, NodePoint],
+					] as [PointNode, PointNode],
 					normal: 90 as AlignmentNormal,
 					id: Symbol("id"),
 				},
@@ -182,18 +93,20 @@ const getRectangularsOffsettedEdges = ({
 						offsetVertice(vertices[1], offset, -offset),
 						offsetVertice(vertices[2], -offset, -offset),
 					] as [Point, Point],
-					nodePoints: [
-						getNodePointFromVertice({
+					pointNodes: [
+						new PointNode({
 							vertice: vertices[1],
 							alignment: "top-right",
+							offsetDistance: offset,
 							otherRectangular: rectangulars[index === 0 ? 1 : 0],
 						}),
-						getNodePointFromVertice({
+						new PointNode({
 							vertice: vertices[2],
 							alignment: "top-left",
+							offsetDistance: offset,
 							otherRectangular: rectangulars[index === 0 ? 1 : 0],
 						}),
-					] as [NodePoint, NodePoint],
+					] as [PointNode, PointNode],
 					normal: 180 as AlignmentNormal,
 					id: Symbol("id"),
 				},
@@ -206,18 +119,20 @@ const getRectangularsOffsettedEdges = ({
 						offsetVertice(vertices[2], -offset, -offset),
 						offsetVertice(vertices[3], -offset, offset),
 					] as [Point, Point],
-					nodePoints: [
-						getNodePointFromVertice({
+					pointNodes: [
+						new PointNode({
 							vertice: vertices[2],
 							alignment: "top-left",
+							offsetDistance: offset,
 							otherRectangular: rectangulars[index === 0 ? 1 : 0],
 						}),
-						getNodePointFromVertice({
+						new PointNode({
 							vertice: vertices[3],
 							alignment: "bottom-left",
+							offsetDistance: offset,
 							otherRectangular: rectangulars[index === 0 ? 1 : 0],
 						}),
-					] as [NodePoint, NodePoint],
+					] as [PointNode, PointNode],
 					normal: 270 as AlignmentNormal,
 					id: Symbol("id"),
 				},
@@ -230,18 +145,20 @@ const getRectangularsOffsettedEdges = ({
 						offsetVertice(vertices[3], -offset, offset),
 						offsetVertice(vertices[0], offset, offset),
 					] as [Point, Point],
-					nodePoints: [
-						getNodePointFromVertice({
+					pointNodes: [
+						new PointNode({
 							vertice: vertices[3],
 							alignment: "bottom-left",
+							offsetDistance: offset,
 							otherRectangular: rectangulars[index === 0 ? 1 : 0],
 						}),
-						getNodePointFromVertice({
+						new PointNode({
 							vertice: vertices[0],
 							alignment: "bottom-right",
+							offsetDistance: offset,
 							otherRectangular: rectangulars[index === 0 ? 1 : 0],
 						}),
-					] as [NodePoint, NodePoint],
+					] as [PointNode, PointNode],
 					normal: 0 as AlignmentNormal,
 					id: Symbol("id"),
 				},
@@ -251,24 +168,38 @@ const getRectangularsOffsettedEdges = ({
 };
 
 const heuristicPathSearch = ({
-	start,
-	end,
+	rect1,
+	rect2,
+	cPoint1,
+	cPoint2,
 	allEdges,
 }: {
-	start: Point;
-	end: Point;
+	rect1: Rect;
+	rect2: Rect;
+	cPoint1: ConnectionPoint;
+	cPoint2: ConnectionPoint;
 	allEdges: RectEdge[];
 }): Point[] => {
 	const pathTree: PathNode = new PathNode({
-		currentBestSolution: { distance: null, nodePoints: [] },
+		currentBestSolution: { distance: null, pointNodes: [] },
 		allEdges,
-		finalTarget: { position: end, correct: true },
-		nodePoint: { position: start, correct: true },
+		finalTarget: new PointNode({
+			vertice: cPoint2.point,
+			alignment: cPoint2.angle,
+			offsetDistance: offsetDistance,
+			otherRectangular: rect2,
+		}),
+		pointNode: new PointNode({
+			vertice: cPoint1.point,
+			alignment: cPoint1.angle,
+			offsetDistance: offsetDistance,
+			otherRectangular: rect1,
+		}),
 		parent: null,
 	});
 
-	return pathTree.currentBestSolution.nodePoints.map(
-		(nodePoint) => nodePoint.position as Point
+	return pathTree.currentBestSolution.pointNodes.map(
+		(pointNode) => pointNode.position as Point
 	);
 };
 
@@ -278,33 +209,21 @@ export const dataConverter = (
 	cPoint1: ConnectionPoint,
 	cPoint2: ConnectionPoint
 ): Point[] | RuntimeException => {
-	const cPoint1WithOffset = getConnectionPointOffsetted({
-		cPoint: cPoint1,
-		offset: offsetDistance,
-	});
-	const cPoint2WithOffset = getConnectionPointOffsetted({
-		cPoint: cPoint2,
-		offset: offsetDistance,
-	});
-
 	const allEdges = getRectangularsOffsettedEdges({
 		rectangulars: [rect1, rect2],
 		offset: offsetDistance,
 	});
 
-	if (cPoint1WithOffset === null || cPoint2WithOffset === null) {
-		return new RuntimeException(
-			"One of the connection points does not perpendicular to its edge."
-		);
-	} else {
-		const path = heuristicPathSearch({
-			start: cPoint1WithOffset,
-			end: cPoint2WithOffset,
-			allEdges,
-		});
-		path.push(cPoint1.point);
-		path.unshift(cPoint2.point);
+	const path = heuristicPathSearch({
+		rect1,
+		rect2,
+		cPoint1,
+		cPoint2,
+		allEdges,
+	});
 
-		return path;
-	}
+	path.push(cPoint1.point);
+	path.unshift(cPoint2.point);
+
+	return path;
 };

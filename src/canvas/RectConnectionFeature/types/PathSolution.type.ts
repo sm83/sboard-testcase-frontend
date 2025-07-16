@@ -1,8 +1,8 @@
-import NodePoint from "./NodePoint.type";
+import PointNode from "../subclassesUtils/PointNode.class";
 
 type PathSolution = {
 	distance: null | number;
-	nodePoints: NodePoint[];
+	pointNodes: PointNode[];
 };
 
 export default PathSolution;

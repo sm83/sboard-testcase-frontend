@@ -1,11 +1,11 @@
-import NodePoint from "../types/NodePoint.type";
 import PathSolution from "../types/PathSolution.type";
 import RectEdge from "../types/RectEdge.type";
-import { getAvailableNodePoints } from "../utils/getAvailablePointNodes";
+import { getAvailablePointNodes } from "../utils/getAvailablePointNodes";
 import {
 	raycastDistanceMeasure,
 	raycastIsIntersectingByAnyEdge,
 } from "../utils/raycast";
+import PointNode from "./PointNode.class";
 
 type ProccessStatus = "ongoing" | "aborted";
 
@@ -14,28 +14,28 @@ class PathNode {
 	allEdges: RectEdge[];
 
 	processing: ProccessStatus;
-	nodePoint: NodePoint;
+	pointNode: PointNode;
 
 	parent: PathNode | null;
 	segmentLength: number;
 	children: PathNode[];
 
-	#finalTarget: NodePoint;
+	#finalTarget: PointNode;
 	distanceToFinalTarget: number;
 
-	availableNodePoints: NodePoint[] | null;
+	availablePointNodes: PointNode[] | null;
 
 	constructor(constructBody: {
 		currentBestSolution: PathSolution;
 		allEdges: RectEdge[];
-		nodePoint: NodePoint;
+		pointNode: PointNode;
 		parent: PathNode | null;
-		finalTarget: NodePoint;
+		finalTarget: PointNode;
 	}) {
 		this.currentBestSolution = constructBody.currentBestSolution;
 		this.allEdges = constructBody.allEdges;
 
-		this.nodePoint = constructBody.nodePoint;
+		this.pointNode = constructBody.pointNode;
 
 		this.parent = constructBody.parent;
 
@@ -43,8 +43,8 @@ class PathNode {
 			this.segmentLength = 0;
 		} else {
 			this.segmentLength = raycastDistanceMeasure(
-				constructBody.nodePoint.position,
-				this.parent.nodePoint.position
+				constructBody.pointNode.position,
+				this.parent.pointNode.position
 			);
 		}
 
@@ -52,7 +52,6 @@ class PathNode {
 			this.processing = "ongoing";
 		} else {
 			const segmentsLengthArray: number[] = [];
-			// segmentsLengthArray.push(this.segmentLength);
 			this.collectSegmentsLength(segmentsLengthArray);
 
 			let currentPathLength = 0;
@@ -62,7 +61,7 @@ class PathNode {
 
 			this.processing =
 				raycastDistanceMeasure(
-					constructBody.nodePoint.position,
+					constructBody.pointNode.position,
 					constructBody.finalTarget.position
 				) +
 					currentPathLength >
@@ -75,30 +74,30 @@ class PathNode {
 
 		this.#finalTarget = constructBody.finalTarget;
 		this.distanceToFinalTarget = raycastDistanceMeasure(
-			constructBody.nodePoint.position,
+			constructBody.pointNode.position,
 			constructBody.finalTarget.position
 		);
 
-		this.availableNodePoints = null;
+		this.availablePointNodes = null;
 
 		const isTargetSeenClearfully: boolean = !raycastIsIntersectingByAnyEdge({
 			ray: {
-				start: this.nodePoint.position,
+				start: this.pointNode.position,
 				end: this.#finalTarget.position,
 			},
 			edges: this.allEdges,
 		});
 
 		if (isTargetSeenClearfully) {
-			const path: NodePoint[] = [];
+			const path: PointNode[] = [];
 			path.push(this.#finalTarget);
-			path.push(this.nodePoint);
+			path.push(this.pointNode);
 			this.collectPathFromParentRecursive(path);
 
 			const segmentsLengthArray: number[] = [];
 			segmentsLengthArray.push(
 				raycastDistanceMeasure(
-					this.nodePoint.position,
+					this.pointNode.position,
 					this.#finalTarget.position
 				)
 			);
@@ -111,13 +110,13 @@ class PathNode {
 
 			if (this.currentBestSolution.distance === null) {
 				this.currentBestSolution = {
-					nodePoints: path,
+					pointNodes: path,
 					distance: currentPathLength,
 				};
 				this.updateBestResultToTheRoot(this.currentBestSolution);
 			} else if (this.currentBestSolution.distance > currentPathLength) {
 				this.currentBestSolution = {
-					nodePoints: path,
+					pointNodes: path,
 					distance: currentPathLength,
 				};
 				this.updateBestResultToTheRoot(this.currentBestSolution);
@@ -127,9 +126,9 @@ class PathNode {
 		}
 	}
 
-	collectPathFromParentRecursive(pathCollector: NodePoint[]) {
+	collectPathFromParentRecursive(pathCollector: PointNode[]) {
 		if (this.parent) {
-			pathCollector.push(this.parent.nodePoint);
+			pathCollector.push(this.parent.pointNode);
 			this.parent.collectPathFromParentRecursive(pathCollector);
 		}
 	}
@@ -148,37 +147,37 @@ class PathNode {
 		}
 	}
 
-	collectUsedNodePoints(nodePointsCollector: NodePoint[]) {
+	collectUsedPointNodes(pointNodesCollector: PointNode[]) {
 		if (this.parent) {
-			nodePointsCollector.push(this.parent.nodePoint);
-			this.parent.collectUsedNodePoints(nodePointsCollector);
+			pointNodesCollector.push(this.parent.pointNode);
+			this.parent.collectUsedPointNodes(pointNodesCollector);
 		}
 	}
 
 	#reconstructChildren() {
 		if (this.processing === "ongoing") {
-			const usedNodePoints: NodePoint[] = [];
-			usedNodePoints.push(this.nodePoint);
-			this.collectUsedNodePoints(usedNodePoints);
+			const usedPointNodes: PointNode[] = [];
+			usedPointNodes.push(this.pointNode);
+			this.collectUsedPointNodes(usedPointNodes);
 
-			this.availableNodePoints = getAvailableNodePoints({
+			this.availablePointNodes = getAvailablePointNodes({
 				ray: {
-					start: this.nodePoint.position,
+					start: this.pointNode.position,
 					end: this.#finalTarget.position,
 				},
 				allEdges: this.allEdges,
-				usedNodePoints,
+				usedPointNodes,
 			});
 		}
 
-		if (this.availableNodePoints) {
-			this.availableNodePoints.forEach((nodePoint) => {
+		if (this.availablePointNodes) {
+			this.availablePointNodes.forEach((pointNode) => {
 				this.children.push(
 					new PathNode({
 						currentBestSolution: this.currentBestSolution,
 						allEdges: this.allEdges,
 						finalTarget: this.#finalTarget,
-						nodePoint,
+						pointNode,
 						parent: this,
 					})
 				);
