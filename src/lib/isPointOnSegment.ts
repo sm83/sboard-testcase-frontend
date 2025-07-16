@@ -10,7 +10,7 @@ const isPointOnSegment = ({
 	vertice2: Point;
 	targetVertice: Point;
 	epsilon?: number;
-}) => {
+}): boolean => {
 	const isBetweenX =
 		Math.min(vertice1.x, vertice2.x) - epsilon <= targetVertice.x &&
 		targetVertice.x <= Math.max(vertice1.x, vertice2.x) + epsilon;

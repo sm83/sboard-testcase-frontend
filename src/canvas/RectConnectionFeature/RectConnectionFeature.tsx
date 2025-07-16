@@ -4,8 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import RectConnectionFeatureCanvas from "./RectConnectionFeatureCanvas";
 import { Rect } from "./types/Rect.type";
 import { ConnectionPoint } from "./types/ConnectionPoint.type";
-import { Point } from "./types/Point.type";
-import useRectangularDrag from "@/lib/useRectangularDrag";
+import useRectangularDrag from "@/canvas/RectConnectionFeature/hooks/useRectangularDrag";
 import {
 	ConnectionPointPositionChangeParams,
 	RectangularPositionChangeParams,
@@ -16,7 +15,6 @@ const RectConnectionFeature = ({
 	rectangulars,
 	initialConnectionPoints,
 	connectionPoints,
-	connectionPath,
 	handleRectangularPositionChange,
 	handleConnectionPointPositionChange,
 }: {
@@ -24,7 +22,6 @@ const RectConnectionFeature = ({
 	rectangulars: [Rect, Rect];
 	initialConnectionPoints: [ConnectionPoint, ConnectionPoint];
 	connectionPoints: [ConnectionPoint, ConnectionPoint];
-	connectionPath: Point[] | null;
 	handleRectangularPositionChange: ({
 		index,
 		newPosition,
@@ -77,21 +74,17 @@ const RectConnectionFeature = ({
 				ctx,
 				rectangulars: initialRectangulars,
 				connectionPoints: initialConnectionPoints,
-				connectionPath,
+				connectionPath: null,
 			});
 			setCanvasFeature(rectConnectionFeature);
 		}
-	}, [
-		canvas,
-		connectionPath,
-		ctx,
-		initialConnectionPoints,
-		initialRectangulars,
-	]);
+	}, [canvas, ctx, initialConnectionPoints, initialRectangulars]);
 
 	// updating rectangulars
 	useEffect(() => {
 		canvasFeature?.updateRectangulars({ newRectangulars: rectangulars });
+
+		canvasFeature?.updateConnectionPath();
 	}, [canvasFeature, rectangulars]);
 
 	// updating connectionPoints
@@ -99,6 +92,8 @@ const RectConnectionFeature = ({
 		canvasFeature?.updateConnectionPoints({
 			newConnectionPoints: connectionPoints,
 		});
+
+		canvasFeature?.updateConnectionPath();
 	}, [canvasFeature, connectionPoints]);
 
 	// resize callback

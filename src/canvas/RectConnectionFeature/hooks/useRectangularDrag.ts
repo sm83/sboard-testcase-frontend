@@ -3,7 +3,7 @@ import {
 	RectangularPositionChangeParams,
 } from "@/app/page";
 import RectConnectionFeatureCanvas from "@/canvas/RectConnectionFeature/RectConnectionFeatureCanvas";
-import { InitException } from "@/canvas/RectConnectionFeature/subclasses/InitException.class";
+import { InitException } from "@/canvas/RectConnectionFeature/subclassesUtils/InitException.class";
 import { MouseEventHandler, useCallback, useState } from "react";
 
 // TODO: decompose interface

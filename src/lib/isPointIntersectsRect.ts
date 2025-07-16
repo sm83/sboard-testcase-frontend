@@ -12,7 +12,7 @@ export const isPointIntersectsRect = ({
 	right: number;
 	top: number;
 	bottom: number;
-}) => {
+}): boolean => {
 	const result =
 		point.x >= left && point.x <= right && point.y >= top && point.y <= bottom;
 

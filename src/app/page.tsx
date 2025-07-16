@@ -2,7 +2,7 @@
 
 import RectConnectionFeature from "@/canvas/RectConnectionFeature/RectConnectionFeature";
 import styles from "./page.module.scss";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Rect } from "@/canvas/RectConnectionFeature/types/Rect.type";
 import { ConnectionPoint } from "@/canvas/RectConnectionFeature/types/ConnectionPoint.type";
 import { Point } from "@/canvas/RectConnectionFeature/types/Point.type";
@@ -11,9 +11,8 @@ import ValueInputGroup from "@/components/ValueInputGroup/ValueInputGroup";
 import ValueInput from "@/components/ValueInput/ValueInput";
 import InputBlock from "@/components/InputBlock/InputBlock";
 import { Size } from "@/canvas/RectConnectionFeature/types/Size.type";
-import { dataConverter } from "@/lib/dataConverter";
-import { RuntimeException } from "@/canvas/RectConnectionFeature/subclasses/RuntimeException.class";
 import Button from "@/components/Button/Button";
+import { dataConverter } from "@/canvas/RectConnectionFeature/utils/dataConverter";
 
 export interface RectangularPositionChangeParams {
 	index: number;
@@ -37,12 +36,12 @@ export interface ConnectionPointAngleChangeParams {
 
 const initialRectangulars: [Rect, Rect] = [
 	{ position: { x: 0, y: 0 }, size: { height: 100, width: 200 } },
-	{ position: { x: 100, y: 150 }, size: { height: 100, width: 200 } },
+	{ position: { x: 518, y: 244 }, size: { height: 100, width: 200 } },
 ];
 
 const initialConnectionPoints: [ConnectionPoint, ConnectionPoint] = [
 	{ point: { x: 50, y: -50 }, angle: 180 },
-	{ point: { x: 170, y: 200 }, angle: 0 },
+	{ point: { x: 588, y: 294 }, angle: 0 },
 ];
 
 export default function Home() {
@@ -111,26 +110,15 @@ export default function Home() {
 		[]
 	);
 
-	const [connectionPath, setConnectionPath] = useState<Point[] | null>(null);
-
 	const buildPath = useCallback(() => {
-		console.log("Building path.");
-
-		const newPath = dataConverter(
+		dataConverter(
 			rectangulars[0],
 			rectangulars[1],
 			connectionPoints[0],
-			connectionPoints[1]
+			connectionPoints[1],
+			true
 		);
-
-		if (!(newPath instanceof RuntimeException)) {
-			setConnectionPath(newPath);
-		}
 	}, [connectionPoints, rectangulars]);
-
-	useEffect(() => {
-		console.log(connectionPath);
-	}, [connectionPath]);
 
 	return (
 		<main className={styles["page-wrapper"]}>
@@ -139,7 +127,6 @@ export default function Home() {
 				rectangulars={rectangulars}
 				initialConnectionPoints={initialConnectionPoints}
 				connectionPoints={connectionPoints}
-				connectionPath={connectionPath}
 				handleRectangularPositionChange={handleRectangularPositionChange}
 				handleConnectionPointPositionChange={
 					handleConnectionPointPositionChange

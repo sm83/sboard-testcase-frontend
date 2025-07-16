@@ -2,15 +2,15 @@ import { ConnectionPoint } from "../types/ConnectionPoint.type";
 import { Point } from "../types/Point.type";
 import { Rect } from "../types/Rect.type";
 import { Size } from "../types/Size.type";
-import ConnectionPointItem from "./RectangularConnectionPoint.class";
-import RectangularEdgeItem from "./RectangularEdge.class";
-import { InitException } from "./InitException.class";
+import RectangularEdgeItem from "../subclassesUtils/RectangularEdge.class";
+import { InitException } from "../subclassesUtils/InitException.class";
 import isPointOnSegment from "@/lib/isPointOnSegment";
 import { AnyException } from "../types/AnyException.type";
-import { getRectangularVertices } from "@/lib/dataConverter";
+import { getRectangularVertices } from "@/canvas/RectConnectionFeature/utils/dataConverter";
 import { getRectBoundingAxes } from "@/lib/getRectBoundingAxes";
+import ConnectionPointCanvasItem from "./ConnectionPointCanvasItem.class";
 
-class RectangularItem {
+class RectangularCanvasItem {
 	#index: number;
 	#canvas: HTMLCanvasElement;
 	#ctx: CanvasRenderingContext2D;
@@ -25,7 +25,7 @@ class RectangularItem {
 	#edges: RectangularEdgeItem[];
 
 	// child instances
-	#connectionPoint: ConnectionPointItem | InitException;
+	#connectionPoint: ConnectionPointCanvasItem | InitException;
 
 	constructor(constructBody: {
 		index: number;
@@ -36,7 +36,10 @@ class RectangularItem {
 		rectangular: Rect;
 		connectionPoints: [ConnectionPoint, ConnectionPoint] | null;
 	}) {
-		console.log("CONSTRUCTION: RectangularItem, index:", constructBody.index);
+		console.log(
+			"CONSTRUCTION: RectangularCanvasItem, index:",
+			constructBody.index
+		);
 
 		this.#index = constructBody.index;
 		this.#canvas = constructBody.canvas;
@@ -79,7 +82,7 @@ class RectangularItem {
 				});
 
 				if (isConnected) {
-					return new ConnectionPointItem({
+					return new ConnectionPointCanvasItem({
 						index: this.#index,
 						ctx: this.#ctx,
 						pushError: this.#pushError,
@@ -120,16 +123,6 @@ class RectangularItem {
 			rect: { position: this.#position, size: this.#size },
 			offset: 0,
 		});
-
-		// TODO: make sure this is useless.
-		// const [left, right, top, bottom] = [
-		// 	this.#position.x - this.#size.width / 2,
-		// 	this.#position.x + this.#size.width / 2,
-		// 	this.#position.y - this.#size.height / 2,
-		// 	this.#position.y + this.#size.height / 2,
-		// ];
-
-		// return [left, right, top, bottom];
 	}
 
 	getEdges() {
@@ -275,4 +268,4 @@ class RectangularItem {
 	}
 }
 
-export default RectangularItem;
+export default RectangularCanvasItem;

@@ -1,6 +1,6 @@
 import { Point } from "../types/Point.type";
 
-class ConnectionPathItem {
+class ConnectionPathCanvasItem {
 	#ctx: CanvasRenderingContext2D;
 
 	#connectionPath: Point[];
@@ -11,6 +11,10 @@ class ConnectionPathItem {
 	}) {
 		this.#ctx = constructBody.ctx;
 		this.#connectionPath = constructBody.connectionPath;
+	}
+
+	update(newPath: Point[]) {
+		this.#connectionPath = newPath;
 	}
 
 	draw() {
@@ -30,4 +34,4 @@ class ConnectionPathItem {
 	}
 }
 
-export default ConnectionPathItem;
+export default ConnectionPathCanvasItem;

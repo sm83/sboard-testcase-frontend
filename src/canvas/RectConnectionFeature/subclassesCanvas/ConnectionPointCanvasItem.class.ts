@@ -3,17 +3,12 @@ import { AnyException } from "../types/AnyException.type";
 import { ConnectionPoint } from "../types/ConnectionPoint.type";
 import { Edge } from "../types/Edge.type";
 import { Point } from "../types/Point.type";
-import { RuntimeException } from "./RuntimeException.class";
+import { RuntimeException } from "../subclassesUtils/RuntimeException.class";
 
 type ConnectionStatus = "connected" | "disconnected";
 type AngleStatus = "perpendicular" | "non perpendicular";
 
-type ConnectionPointItemState = {
-	position: Point;
-	angle: number;
-};
-
-class ConnectionPointItem {
+class ConnectionPointCanvasItem {
 	#index: number;
 	#ctx: CanvasRenderingContext2D;
 	#pushError: (newError: AnyException) => void;
@@ -48,7 +43,7 @@ class ConnectionPointItem {
 		edge: Edge;
 	}) {
 		console.log(
-			"CONSTRUCTION: ConnectionPointItem, index:",
+			"CONSTRUCTION: ConnectionPointCanvasItem, index:",
 			constructBody.index
 		);
 
@@ -89,8 +84,8 @@ class ConnectionPointItem {
 		return this.#relativePosition;
 	}
 
-	getState(): ConnectionPointItemState {
-		return { position: this.#position, angle: this.#angle };
+	getState(): ConnectionPoint {
+		return { point: this.#position, angle: this.#angle };
 	}
 
 	getEdge() {
@@ -234,4 +229,4 @@ class ConnectionPointItem {
 	}
 }
 
-export default ConnectionPointItem;
+export default ConnectionPointCanvasItem;

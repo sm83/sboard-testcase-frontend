@@ -1,21 +1,21 @@
-import ConnectionPathItem from "./subclasses/RectangularConnectionPath.class";
-import ConnectionPointItem from "./subclasses/RectangularConnectionPoint.class";
-import RectangularItem from "./subclasses/RectangularItem.class";
 import { AnyException } from "./types/AnyException.type";
 import { ConnectionPoint } from "./types/ConnectionPoint.type";
 import { Point } from "./types/Point.type";
 import { Rect } from "./types/Rect.type";
-import { InitException } from "./subclasses/InitException.class";
-import { AlignmentNormal } from "./types/AlignmentNormal.type";
-import { RuntimeException } from "./subclasses/RuntimeException.class";
+import { InitException } from "./subclassesUtils/InitException.class";
+import { RuntimeException } from "./subclassesUtils/RuntimeException.class";
+import { dataConverter } from "@/canvas/RectConnectionFeature/utils/dataConverter";
+import RectangularCanvasItem from "./subclassesCanvas/RectangularCanvasItem.class";
+import ConnectionPointCanvasItem from "./subclassesCanvas/ConnectionPointCanvasItem.class";
+import ConnectionPathCanvasItem from "./subclassesCanvas/ConnectionPathCanvasItem.class";
 
 class RectConnectionFeatureCanvas {
 	#canvas: HTMLCanvasElement;
 	#ctx: CanvasRenderingContext2D;
 
 	// children instances
-	#rectangulars: [RectangularItem, RectangularItem];
-	#connectionPath: ConnectionPathItem | null = null;
+	#rectangulars: [RectangularCanvasItem, RectangularCanvasItem];
+	#connectionPath: ConnectionPathCanvasItem | null = null;
 
 	#errors: AnyException[] = [];
 	#pushError: (newError: AnyException) => void = (newError: AnyException) => {
@@ -48,7 +48,7 @@ class RectConnectionFeatureCanvas {
 		this.#ctx = constructBody.ctx;
 
 		this.#rectangulars = [
-			new RectangularItem({
+			new RectangularCanvasItem({
 				canvas: constructBody.canvas,
 				ctx: constructBody.ctx,
 				index: 0,
@@ -56,7 +56,7 @@ class RectConnectionFeatureCanvas {
 				connectionPoints: constructBody.connectionPoints,
 				pushError: this.#pushError,
 			}),
-			new RectangularItem({
+			new RectangularCanvasItem({
 				canvas: constructBody.canvas,
 				ctx: constructBody.ctx,
 				index: 1,
@@ -67,7 +67,7 @@ class RectConnectionFeatureCanvas {
 		];
 
 		if (constructBody.connectionPath) {
-			this.#connectionPath = new ConnectionPathItem({
+			this.#connectionPath = new ConnectionPathCanvasItem({
 				ctx: constructBody.ctx,
 				connectionPath: constructBody.connectionPath,
 			});
@@ -80,8 +80,8 @@ class RectConnectionFeatureCanvas {
 		return this.#rectangulars;
 	}
 
-	getConnectionPointsFromRectangulars(): ConnectionPointItem[] {
-		const connectionPoints: ConnectionPointItem[] = [];
+	getConnectionPointsFromRectangulars(): ConnectionPointCanvasItem[] {
+		const connectionPoints: ConnectionPointCanvasItem[] = [];
 
 		this.#rectangulars.forEach((rect) => {
 			const connectionPoint = rect.getConnectionPoint();
@@ -181,22 +181,33 @@ class RectConnectionFeatureCanvas {
 		this.#drawAll();
 	}
 
-	#calculateOffsetByEdgeNormal({
-		scaleChange,
-		edgeNormal,
-	}: {
-		scaleChange: Point;
-		edgeNormal: AlignmentNormal;
-	}): Point {
-		switch (edgeNormal) {
-			case 0:
-				return { x: 0, y: scaleChange.y / 2 };
-			case 90:
-				return { x: scaleChange.x / 2, y: 0 };
-			case 180:
-				return { x: 0, y: -scaleChange.y / 2 };
-			case 270:
-				return { x: -scaleChange.x / 2, y: 0 };
+	updateConnectionPath() {
+		const cPointItem1 = this.#rectangulars[0].getConnectionPoint();
+		const cPointItem2 = this.#rectangulars[1].getConnectionPoint();
+
+		if (
+			!(cPointItem1 instanceof InitException) &&
+			!(cPointItem2 instanceof InitException)
+		) {
+			const rect1 = this.#rectangulars[0].getState();
+			const rect2 = this.#rectangulars[1].getState();
+			const cPoint1 = cPointItem1.getState();
+			const cPoint2 = cPointItem2.getState();
+
+			const newPath = dataConverter(rect1, rect2, cPoint1, cPoint2);
+
+			if (!(newPath instanceof RuntimeException)) {
+				if (this.#connectionPath === null) {
+					this.#connectionPath = new ConnectionPathCanvasItem({
+						ctx: this.#ctx,
+						connectionPath: newPath,
+					});
+				} else {
+					this.#connectionPath?.update(newPath);
+				}
+
+				this.#drawAll();
+			}
 		}
 	}
 
