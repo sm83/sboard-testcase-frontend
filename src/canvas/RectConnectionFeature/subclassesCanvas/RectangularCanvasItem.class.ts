@@ -216,7 +216,6 @@ class RectangularCanvasItem {
 					break;
 			}
 
-			// TODO: attention
 			const pointPosition = this.#connectionPoint.getPosition();
 
 			this.#connectionPoint.move({

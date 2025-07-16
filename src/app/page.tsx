@@ -13,6 +13,10 @@ import InputBlock from "@/components/InputBlock/InputBlock";
 import { Size } from "@/canvas/RectConnectionFeature/types/Size.type";
 import Button from "@/components/Button/Button";
 import { dataConverter } from "@/canvas/RectConnectionFeature/utils/dataConverter";
+import { isPointIntersectsRect } from "@/lib/isPointIntersectsRect";
+import { getRectBoundingAxes } from "@/lib/getRectBoundingAxes";
+import { getRelativeOrientation } from "@/lib/getRelativeOrientation";
+import getEnlargeDirection from "@/lib/getEnlargeDirection";
 
 export interface RectangularPositionChangeParams {
 	index: number;
@@ -47,32 +51,6 @@ const initialConnectionPoints: [ConnectionPoint, ConnectionPoint] = [
 export default function Home() {
 	const [rectangulars, setRectangulars] =
 		useState<[Rect, Rect]>(initialRectangulars);
-
-	const handleRectangularPositionChange = useCallback(
-		({ index, newPosition }: RectangularPositionChangeParams): void => {
-			setRectangulars((prev) => {
-				const newRectangulars = [...prev] as [Rect, Rect];
-
-				newRectangulars[index].position = newPosition;
-
-				return newRectangulars;
-			});
-		},
-		[]
-	);
-
-	const handleRectangularSizeChange = useCallback(
-		({ index, newSize }: RectangularSizeChangeParams): void => {
-			setRectangulars((prev) => {
-				const newRectangulars = [...prev] as [Rect, Rect];
-
-				newRectangulars[index].size = newSize;
-
-				return newRectangulars;
-			});
-		},
-		[]
-	);
 
 	const [connectionPoints, setConnectionPoints] = useState<
 		[ConnectionPoint, ConnectionPoint]
@@ -110,12 +88,108 @@ export default function Home() {
 		[]
 	);
 
+	const handleRectangularPositionChange = useCallback(
+		({ index, newPosition }: RectangularPositionChangeParams): void => {
+			{
+				const [left, right, top, bottom] = getRectBoundingAxes({
+					rect: rectangulars[index],
+				});
+				const connectionPoint = connectionPoints[index];
+
+				if (
+					isPointIntersectsRect({
+						point: connectionPoint.point,
+						left,
+						right,
+						top,
+						bottom,
+					})
+				) {
+					const xOffset = newPosition.x - rectangulars[index].position.x;
+					const yOffset = newPosition.y - rectangulars[index].position.y;
+
+					handleConnectionPointPositionChange({
+						index,
+						newPosition: {
+							x: connectionPoint.point.x + xOffset,
+							y: connectionPoint.point.y + yOffset,
+						},
+					});
+				}
+			}
+
+			setRectangulars((prev) => {
+				const newRectangulars = [...prev] as [Rect, Rect];
+
+				newRectangulars[index].position = newPosition;
+
+				return newRectangulars;
+			});
+		},
+		[connectionPoints, handleConnectionPointPositionChange, rectangulars]
+	);
+
+	const handleRectangularSizeChange = useCallback(
+		({ index, newSize }: RectangularSizeChangeParams): void => {
+			{
+				const [left, right, top, bottom] = getRectBoundingAxes({
+					rect: rectangulars[index],
+				});
+				const connectionPoint = connectionPoints[index];
+				const connectionPointRelativeOrientation = getRelativeOrientation(
+					connectionPoint.angle
+				);
+
+				if (
+					isPointIntersectsRect({
+						point: connectionPoint.point,
+						left,
+						right,
+						top,
+						bottom,
+					})
+				) {
+					const xOffset =
+						((newSize.width - rectangulars[index].size.width) / 2) *
+						getEnlargeDirection({
+							relativeOrientation: connectionPointRelativeOrientation,
+							axis: "x",
+						});
+					const yOffset =
+						((newSize.height - rectangulars[index].size.height) / 2) *
+						getEnlargeDirection({
+							relativeOrientation: connectionPointRelativeOrientation,
+							axis: "y",
+						});
+
+					handleConnectionPointPositionChange({
+						index,
+						newPosition: {
+							x: connectionPoint.point.x + xOffset,
+							y: connectionPoint.point.y + yOffset,
+						},
+					});
+				}
+			}
+
+			setRectangulars((prev) => {
+				const newRectangulars = [...prev] as [Rect, Rect];
+
+				newRectangulars[index].size = newSize;
+
+				return newRectangulars;
+			});
+		},
+		[connectionPoints, handleConnectionPointPositionChange, rectangulars]
+	);
+
 	const buildPath = useCallback(() => {
 		dataConverter(
 			rectangulars[0],
 			rectangulars[1],
 			connectionPoints[0],
-			connectionPoints[1]
+			connectionPoints[1],
+			true
 		);
 	}, [connectionPoints, rectangulars]);
 
@@ -329,7 +403,7 @@ export default function Home() {
 						/>
 					</ValueInputGroup>
 				</InputBlock>
-				<Button text="Build path" onClick={buildPath} />
+				<Button text="Console Node Tree" onClick={buildPath} />
 			</Sidebar>
 		</main>
 	);

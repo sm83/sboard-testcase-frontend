@@ -6,13 +6,7 @@ import RectConnectionFeatureCanvas from "@/canvas/RectConnectionFeature/RectConn
 import { InitException } from "@/canvas/RectConnectionFeature/subclassesUtils/InitException.class";
 import { MouseEventHandler, useCallback, useState } from "react";
 
-// TODO: decompose interface
-const useRectangularDrag = ({
-	canvas,
-	canvasFeature,
-	handleRectangularPositionChange,
-	handleConnectionPointPositionChange,
-}: {
+interface UseRectangularDragParams {
 	canvas: HTMLCanvasElement | null;
 	canvasFeature: RectConnectionFeatureCanvas | null;
 	handleRectangularPositionChange: ({
@@ -23,7 +17,14 @@ const useRectangularDrag = ({
 		index,
 		newPosition,
 	}: ConnectionPointPositionChangeParams) => void;
-}) => {
+}
+
+const useRectangularDrag = ({
+	canvas,
+	canvasFeature,
+	handleRectangularPositionChange,
+	handleConnectionPointPositionChange,
+}: UseRectangularDragParams) => {
 	const [rectToMove, setRectToMove] = useState<number | null>(null);
 	const [cursorOffset, setCursorOffset] = useState<{
 		x: number;

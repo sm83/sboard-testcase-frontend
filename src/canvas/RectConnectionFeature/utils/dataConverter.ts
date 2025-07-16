@@ -173,12 +173,14 @@ const heuristicPathSearch = ({
 	cPoint1,
 	cPoint2,
 	allEdges,
+	logNodeTree = false,
 }: {
 	rect1: Rect;
 	rect2: Rect;
 	cPoint1: ConnectionPoint;
 	cPoint2: ConnectionPoint;
 	allEdges: RectEdge[];
+	logNodeTree?: boolean;
 }): Point[] => {
 	const pathTree: PathNode = new PathNode({
 		currentBestSolution: { distance: null, pointNodes: [] },
@@ -198,6 +200,10 @@ const heuristicPathSearch = ({
 		parent: null,
 	});
 
+	if (logNodeTree) {
+		console.log(pathTree);
+	}
+
 	return pathTree.currentBestSolution.pointNodes.map(
 		(pointNode) => pointNode.position as Point
 	);
@@ -207,7 +213,8 @@ export const dataConverter = (
 	rect1: Rect,
 	rect2: Rect,
 	cPoint1: ConnectionPoint,
-	cPoint2: ConnectionPoint
+	cPoint2: ConnectionPoint,
+	logNodeTree?: boolean
 ): Point[] | RuntimeException => {
 	const allEdges = getRectangularsOffsettedEdges({
 		rectangulars: [rect1, rect2],
@@ -220,6 +227,7 @@ export const dataConverter = (
 		cPoint1,
 		cPoint2,
 		allEdges,
+		logNodeTree,
 	});
 
 	path.push(cPoint1.point);

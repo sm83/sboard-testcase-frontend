@@ -1,6 +1,6 @@
 import styles from "./RectConnectionFeature.module.scss";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import RectConnectionFeatureCanvas from "./RectConnectionFeatureCanvas";
 import { Rect } from "./types/Rect.type";
 import { ConnectionPoint } from "./types/ConnectionPoint.type";
@@ -31,25 +31,13 @@ const RectConnectionFeature = ({
 		newPosition,
 	}: ConnectionPointPositionChangeParams) => void;
 }) => {
-	const wrapperId: string = "rect-connection-feature-wrapper";
 	const featureId: string = "rect-connection-feature";
 
-	// TODO: replace with actual ref
-	const [wrapper, setWrapper] = useState<HTMLDivElement | null>(null);
+	const wrapper = useRef<HTMLDivElement | null>(null);
 	const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
 	const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
 	const [canvasFeature, setCanvasFeature] =
 		useState<RectConnectionFeatureCanvas | null>(null);
-
-	// initializing wrapper once
-	useEffect(() => {
-		const wrapperElement = document.getElementById(
-			wrapperId
-		) as HTMLDivElement | null;
-		if (wrapperElement) {
-			setWrapper(wrapperElement);
-		}
-	}, []);
 
 	// initializing canvas and ctx once if wrapper changed
 	useEffect(() => {
@@ -57,9 +45,9 @@ const RectConnectionFeature = ({
 			featureId
 		) as HTMLCanvasElement | null;
 
-		if (canvasElement && wrapper) {
-			canvasElement.width = wrapper.clientWidth;
-			canvasElement.height = wrapper.clientHeight;
+		if (canvasElement && wrapper.current) {
+			canvasElement.width = wrapper.current.clientWidth;
+			canvasElement.height = wrapper.current.clientHeight;
 
 			setCanvas(canvasElement);
 			setCtx(canvasElement.getContext("2d"));
@@ -98,9 +86,9 @@ const RectConnectionFeature = ({
 
 	// resize callback
 	const redrawFeature = useCallback(() => {
-		if (canvas && ctx && wrapper) {
-			canvas.width = wrapper.clientWidth;
-			canvas.height = wrapper.clientHeight;
+		if (canvas && ctx && wrapper.current) {
+			canvas.width = wrapper.current.clientWidth;
+			canvas.height = wrapper.current.clientHeight;
 
 			canvasFeature?.resizeCanvas(canvas);
 		}
@@ -122,7 +110,7 @@ const RectConnectionFeature = ({
 		});
 
 	return (
-		<div id={wrapperId} className={styles["rect-connection-feature-wrapper"]}>
+		<div ref={wrapper} className={styles["rect-connection-feature-wrapper"]}>
 			<canvas
 				id={featureId}
 				className={styles["rect-connection-feature"]}
