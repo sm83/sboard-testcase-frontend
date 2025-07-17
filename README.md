@@ -24,6 +24,6 @@ Application is built using Next.js.
 
 ## Deployment  
 - Docker + Nginx on a self-hosted server.  
-- Live demo: [www.petrovich-stage-2.ru](http://www.petrovich-stage-2.ru)  
+- Live demo: [https://petrovich-stage-2.ru/](https://petrovich-stage-2.ru/)  
 
 ⚠ **Note:** The server is currently running on a backup PSU due to AC failure (Taganrog heatwave). Stability may vary, but it should be ok.  
