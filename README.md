@@ -26,7 +26,7 @@ Application is built using Next.js.
 
 Deployed with Docker and Nginx with domain on my own server which I can touch directly.
 
-Warning: server got AC malfunction and its Power Unit got damaged due to anomaly heat in Taganrog. Now server is working on Perdoon Power Unit. It should be stable, I hope.
+**Warning:** server got AC malfunction and its Power Unit got damaged due to anomaly heat in Taganrog. Now server is working on Perdoon Power Unit. It should be stable, I hope.
 
 Feel free to visit domain with this project deployed:
 [www.petrovich-stage-2.ru](https://petrovich-stage-2.ru/)
