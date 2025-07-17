@@ -1,4 +1,4 @@
-.page-wrapper {
+.page {
 	width: 100%;
 	height: 100%;
 
@@ -10,6 +10,54 @@
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+
+	&__github-btn-wrapper {
+		position: absolute;
+		left: 0;
+		top: 0;
+
+		width: 7rem;
+		height: 7rem;
+		padding: 0.5rem;
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		z-index: 1;
+
+		pointer-events: none;
+	}
+
+	&__github-btn {
+		background-color: #cacaca;
+		border-radius: 3.5rem;
+
+		border: 0;
+		outline: none;
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		pointer-events: all;
+		cursor: pointer;
+
+		width: 92%;
+		height: 92%;
+
+		transition: width 0.1s, height 0.1s;
+
+		&:hover {
+			width: 100%;
+			height: 100%;
+		}
+
+		&:active {
+			width: 96%;
+			height: 96%;
+		}
+	}
 
 	&__error-span {
 		position: absolute;

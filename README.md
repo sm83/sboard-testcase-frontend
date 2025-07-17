@@ -1,8 +1,4 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 ## Getting Started
-
-First, run the development server:
 
 ```bash
 npm run dev
@@ -14,23 +10,23 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Description
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+This is a testcase project for sBoard. It produces solution of finding shortest path between two rectangulars.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+It builds path tree using class instances. Each instance have parent, childrens. It is build recursively inside class constructor. It uses "Availability Heuristic" and "Euclidean Heuristic" to avoid building all paths, it drops some tree branches as it gets that even partial way is longer than already found solution.
 
-## Learn More
+All canvas class instances built only once. Main canvas instance has 'reactive bridge' to canvas related .tsx component, so it can be commonly used in React Layout. This canvas solution goes with hook, which allows to call Feature methods from parent component.
 
-To learn more about Next.js, take a look at the following resources:
+The code of building path is covered with tests using Jest.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Application is built using Next.js.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+Deployed with Docker and Nginx with domain on my own server which I can touch directly.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Warning: server got AC malfunction and its Power Unit got damaged due to anomaly heat in Taganrog. Now server is working on Perdoon Power Unit. It should be stable, I hope.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Feel free to visit domain with this project deployed:
+[www.petrovich-stage-2.ru](https://petrovich-stage-2.ru/)

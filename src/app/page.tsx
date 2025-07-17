@@ -14,6 +14,7 @@ import InputBlock from "@/components/InputBlock/InputBlock";
 import Button from "@/components/Button/Button";
 import { dataConverter } from "@/canvas/RectConnectionFeature/utils/dataConverter";
 import useRectConnectionFeature from "@/canvas/RectConnectionFeature/hooks/useRectConnectionFeature";
+import { GitHubLinkIcon } from "@/components/GithubLinkIcon/GithubLinkIcon";
 
 const initialRectangulars: [Rect, Rect] = [
 	{ position: { x: 0, y: 0 }, size: { height: 100, width: 200 } },
@@ -73,7 +74,22 @@ export default function Home() {
 	});
 
 	return (
-		<main className={styles["page-wrapper"]}>
+		<main className={styles["page"]}>
+			<div className={styles["page__github-btn-wrapper"]}>
+				<button
+					className={styles["page__github-btn"]}
+					onClick={() => {
+						window.open(
+							"https://github.com/sm83/sboard-testcase-frontend",
+							"_blank",
+							"noopener noreferrer"
+						);
+					}}
+					aria-label="Открыть исходный код на Github в новой вкладке"
+				>
+					<GitHubLinkIcon sizeInRem={5} />
+				</button>
+			</div>
 			<RectConnectionFeature
 				ref={rectConnectionFeatureRef}
 				initialRectangulars={initialRectangulars}
