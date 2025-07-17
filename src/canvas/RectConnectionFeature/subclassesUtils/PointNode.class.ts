@@ -11,7 +11,6 @@ class PointNode {
 	position: Point;
 	correct: boolean;
 
-	// TODO: error applience
 	#initError: InitException | null = null;
 
 	constructor(constructBody: {

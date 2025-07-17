@@ -1,7 +1,6 @@
 import { Point } from "@/canvas/RectConnectionFeature/types/Point.type";
 import { Rect } from "@/canvas/RectConnectionFeature/types/Rect.type";
 import { ConnectionPoint } from "@/canvas/RectConnectionFeature/types/ConnectionPoint.type";
-import { RuntimeException } from "@/canvas/RectConnectionFeature/subclassesUtils/RuntimeException.class";
 import PathNode from "../subclassesUtils/PathNode.class";
 import PointNode from "../subclassesUtils/PointNode.class";
 
@@ -15,7 +14,7 @@ export const dataConverter = (
 	cPoint1: ConnectionPoint,
 	cPoint2: ConnectionPoint,
 	logNodeTree?: boolean
-): Point[] | RuntimeException => {
+): Point[] => {
 	const allEdges = getRectangularsOffsettedEdges({
 		rectangulars: [rect1, rect2],
 		offset: offsetDistance,
